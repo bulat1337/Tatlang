@@ -16,4 +16,6 @@ char * create_file_name(const char *name, const char *postfix);
 
 int    cmp_double      (double first_double, double second_double);
 
+void   write_log       (const char *file_name, const char *fmt, ...);
+
 #endif

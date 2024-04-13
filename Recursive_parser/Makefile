@@ -1,10 +1,9 @@
-PATH_FRD_OBJ    = ../../obj/frontend_obj/
-PATH_FRD        = ./src/
+PATH_R_PARSER_OBJ = ../obj/recursive_parser_obj/
+PATH_R_PARSER_SRC = ./src/
+R_PARSER_SRC = $(wildcard $(PATH_R_PARSER_SRC)*.cpp)
+R_PARSER_OBJ = $(patsubst $(PATH_R_PARSER_SRC)%.cpp, $(PATH_R_PARSER_OBJ)%.o, $(R_PARSER_SRC))
 
-FRD_SRC = $(wildcard $(PATH_FRD)*.cpp)
-FRD_OBJ = $(patsubst $(PATH_FRD)%.cpp, $(PATH_FRD_OBJ)%.o, $(FRD_SRC))
-
-FRD_TARGET = ../../executables/frontend.out
+PATH_LIB = ../libs/
 
 CC = g++
 
@@ -24,13 +23,13 @@ FLAGS = -D _DEBUG -ggdb3 \
 
 LINK_FLAGS = -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-Include = -I./include/ -I../../B_tree/include/ -I../../Recursive_parser/include/
+Include = -I../B_tree/include/ -I./include/ -I../Utils/include/
 
-$(FRD_TARGET): $(FRD_OBJ)
-	@ $(CC) $(LINK_FLAGS) $^ -o $@ -L../../libs -lutils -lb_tree -lrecursive_parser
+$(PATH_LIB)librecursive_parser.a: $(R_PARSER_OBJ)
+	@ ar rvs $@ $(R_PARSER_OBJ)
 
-$(PATH_FRD_OBJ)%.o: $(PATH_FRD)%.cpp
+$(PATH_R_PARSER_OBJ)%.o: $(PATH_R_PARSER_SRC)%.cpp
 	@ $(CC) -c $< -o $@ $(FLAGS) $(Include)
 
 clean:
-	@rm $(FRD_TARGET) $(PATH_FRD_OBJ)*.o
+	@rm $(PATH_R_PARSER_OBJ)*.o
