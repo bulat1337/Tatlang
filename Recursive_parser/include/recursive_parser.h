@@ -1,9 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#define PARSE_LOG(...)\
-	write_log("parse_log.txt", __VA_ARGS__);
-
 #include "b_tree.h"
 #include "utils.h"
 

@@ -1,6 +1,6 @@
-SUBDIRS = ../Utils/ ../B_tree/ ../Recursive_parser/ ../Language/Frontend/ ../CPU/build/ ../Language/Backend/
+SUBDIRS = ../Utils/ ../B_tree/ ../Recursive_parser/ ../CPU/build/ ../Language/Frontend/ ../Language/Backend/
 
-FRD_SUBDIRS = ../Utils/ ../B_tree/ ../Recursive_parser/ ../Language/Frontend/
+FRD_SUBDIRS = ../Utils/ ../B_tree/ ../Recursive_parser/ ../File_parser/ ../Language/Frontend/
 BKD_SUBDIRS = ../CPU/build/ ../Language/Backend/
 
 TXT_JUNK = $(wildcard *.txt)

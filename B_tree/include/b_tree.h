@@ -32,6 +32,12 @@ enum Node_type
 	NUM = 0,
 	OP  = 1,
 	VAR = 2,
+	OBR = 3,
+	CBR = 4,
+	OCBR = 5,
+	CCBR = 6,
+	SMC = 7,
+	KWD = 8,
 };
 
 enum Ops
@@ -46,6 +52,7 @@ enum Ops
 	SIN        = 7,
 	COS        = 8,
 	SQRT       = 9,
+	ASS        = 10,
 };
 
 struct Node_value

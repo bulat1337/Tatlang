@@ -13,8 +13,8 @@ PATH_STACK_SRC = ../../Stack/src/
 STACK_SRC = $(wildcard $(PATH_STACK_SRC)*.cpp)
 STACK_OBJ = $(patsubst $(PATH_STACK_SRC)%.cpp, $(PATH_STACK_OBJ)%.o, $(STACK_SRC))
 
-PATH_PARSE_OBJ = ../../obj/file_parser_obj/
-PATH_PARSE_SRC = ../../File_parser/src/
+PATH_PARSE_OBJ = ../../../obj/file_parser_obj/
+PATH_PARSE_SRC = ../../../File_parser/src/
 PARSE_SRC = $(wildcard $(PATH_PARSE_SRC)*.cpp)
 PARSE_OBJ = $(patsubst $(PATH_PARSE_SRC)%.cpp, $(PATH_PARSE_OBJ)%.o, $(PARSE_SRC))
 
@@ -38,7 +38,7 @@ FLAGS = -D _DEBUG -ggdb3 \
 
 LINK_FLAGS = -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-Include = -I./include/ -I../../Global/include/ -I../../Stack/include/ -I../../File_parser/include/
+Include = -I./include/ -I../../Global/include/ -I../../Stack/include/ -I../../../File_parser/include/
 
 $(PATH_LIB)libassembler.a: $(ASM_OBJ)
 	@ ar rvs $@ $(ASM_OBJ) $(GLOBAL_OBJ) $(STACK_OBJ) $(PARSE_OBJ)

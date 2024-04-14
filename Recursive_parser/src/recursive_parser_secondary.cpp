@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdarg.h>
 
 #include "recursive_parser_secondary.h"
 
@@ -85,6 +86,26 @@ size_t count_non_spaces(const char *str, size_t size)
 	}
 
 	return non_spaces;
+}
+
+void write_log(const char *file_name, const char *fmt, ...)
+{
+    static FILE *log_file = fopen(file_name, "w");
+
+    if (log_file == NULL)
+	{
+        perror("Error opening log_file");
+        return;
+    }
+
+    va_list args = NULL;
+
+    va_start(args, fmt);
+
+	// fprintf(log_file, "file: %s func: %s on line : %d\n", file_name, func_name, line);
+    vfprintf(log_file, fmt, args);
+
+    va_end(args);
 }
 
 #undef SYM_COND

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "file_parse.h"
+#include "file_parser.h"
 
 /**
  * @brief Checks if a pointer is NULL and prints an error message if it is.

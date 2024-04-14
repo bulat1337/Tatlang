@@ -192,6 +192,31 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 			DUMP("%18.2lf", node->value.num_value);
 			break;
 		}
+		case OBR:
+		{
+			DUMP("          OBR");
+			break;
+		}
+		case CBR:
+		{
+			DUMP("          CBR");
+			break;
+		}
+		case OCBR:
+		{
+			DUMP("          OCBR");
+			break;
+		}
+		case CCBR:
+		{
+			DUMP("          CCBR");
+			break;
+		}
+		case SMC:
+		{
+			DUMP("          SMC");
+			break;
+		}
 		case OP:
 		{
 			DUMP("          OP");

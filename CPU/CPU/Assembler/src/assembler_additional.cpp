@@ -6,7 +6,7 @@
 
 #include "assembler_additional.h"
 #include "commands.h"
-#include "file_parse.h"
+#include "file_parser.h"
 #include "stack.h"
 
 #define ALLOCATION_CHECK(ptr)\

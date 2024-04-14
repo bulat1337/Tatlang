@@ -1,7 +1,7 @@
-SUBDIRS = ../Global/ ../Stack/ ../File_parser/ ../Drivers/ ../CPU/Assembler/ ../CPU/SPU/
+SUBDIRS = ../Global/ ../Stack/ ../../File_parser/ ../Drivers/ ../CPU/Assembler/ ../CPU/SPU/
 
-ASM_SUBDIRS = ../Global/ ../Stack/ ../File_parser/ ../CPU/Assembler/
-SPU_SUBDIRS = ../Global/ ../Stack/ ../File_parser/ ../Drivers/ ../CPU/SPU/
+ASM_SUBDIRS = ../Global/ ../Stack/ ../../File_parser/ ../CPU/Assembler/
+SPU_SUBDIRS = ../Global/ ../Stack/ ../../File_parser/ ../Drivers/ ../CPU/SPU/
 
 TXT_JUNK = $(wildcard *.txt)
 BIN_JUNK = $(wildcard *.bin)

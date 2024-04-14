@@ -22,29 +22,7 @@ Uni_ret create_node(Node_type type, Node_value value, B_tree_node *left_child,
 	result.arg.node->left  = left_child;
 	result.arg.node->right = right_child;
 
-	switch(type)
-	{
-		case NUM:
-		{
-			result.arg.node->value.num_value = value.num_value;
-			break;
-		}
-		case OP:
-		{
-			result.arg.node->value.op_value  = value.op_value;
-			break;
-		}
-		case VAR:
-		{
-			result.arg.node->value.var_value = value.var_value;
-			break;
-		}
-		default:
-		{
-			result.error_code = UNKNOWN_NODE_TYPE;
-			return result;
-		}
-	}
+	result.arg.node->value = value;
 
 	return result;
 }

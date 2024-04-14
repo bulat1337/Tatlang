@@ -24,10 +24,10 @@ FLAGS = -D _DEBUG -ggdb3 \
 
 LINK_FLAGS = -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-Include = -I./include/ -I../../B_tree/include/ -I../../Recursive_parser/include/
+Include = -I./include/ -I../../B_tree/include/ -I../../Recursive_parser/include/ -I../../Utils/include/ -I../../File_parser/include/
 
 $(FRD_TARGET): $(FRD_OBJ)
-	@ $(CC) $(LINK_FLAGS) $^ -o $@ -L../../libs -lutils -lb_tree -lrecursive_parser
+	@ $(CC) $(LINK_FLAGS) $^ -o $@ -L../../libs -lutils -lb_tree -lrecursive_parser -lfile_parser
 
 $(PATH_FRD_OBJ)%.o: $(PATH_FRD)%.cpp
 	@ $(CC) -c $< -o $@ $(FLAGS) $(Include)
