@@ -156,7 +156,7 @@ frd_err_t add_node(Tokens *tokens, Node_type type, Node_value value)
 	return FRD_ALL_GOOD;
 }
 
-Ops get_op(char sym, frd_err_t error_code)
+Ops get_op(char sym, frd_err_t error_code = FRD_ALL_GOOD)
 {
 	switch(sym)
 	{
@@ -202,6 +202,7 @@ frd_err_t add_token(Tokens *tokens, char *token)
 	}
 	else
 	{
+		LOG("It's VAR: %s\n", token);
 		CALL(add_node(tokens, VAR, {.var_value = token}));
 	}
 
@@ -214,6 +215,7 @@ bool is_kwd(char *token)
 	{
 		if(!strncmp(token, kwds[kwd_id], strlen(token)))
 		{
+			LOG("It's KWD: %s\n", token);
 			return true;
 		}
 
@@ -245,13 +247,13 @@ void dump_tokens(Tokens *tokens)
 			case VAR:
 			{
 				LOG("\tVAR");
-				LOG("\t%.2lf\n", tokens->data[token_id].value.var_value);
+				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
 			case KWD:
 			{
 				LOG("\tKWD");
-				LOG("\t%.2lf\n", tokens->data[token_id].value.var_value);
+				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
 			case OBR:

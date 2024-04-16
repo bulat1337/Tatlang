@@ -9,39 +9,39 @@
 #define SYNTAX_CHECK(cond)												\
 	if(!(cond))															\
 	{																	\
-		PARSE_LOG("Syntax ERROR on %d: "#cond" is fasle\n", __LINE__);	\
-		PARSE_LOG("%s returning NULL\n", __func__);						\
+		printf("Syntax ERROR on %d: "#cond" is fasle\n", __LINE__);		\
+		printf("%s returning NULL\n", __func__);						\
 		return NULL;													\
 	}
 
 #define REPORT_ERROR(...)							\
-	PARSE_LOG(__VA_ARGS__);							\
-	PARSE_LOG("%s returning NULL\n", __func__);		\
+	printf(__VA_ARGS__);							\
+	printf("%s returning NULL\n", __func__);		\
 	return NULL;
 
 #define SYNTAX_ERROR									\
 	REPORT_ERROR("syntax error on: %lu\n", __LINE__)	\
-	PARSE_LOG("%s returning NULL\n", __func__);			\
+	printf("%s returning NULL\n", __func__);			\
 	return NULL;
 
 #define CHECK_RET(ptr)								\
 	if(ptr == NULL)									\
 	{												\
-		PARSE_LOG("%s returning NULL\n", __func__);	\
+		printf("%s returning NULL\n", __func__);	\
 		return NULL;								\
 	}												\
 
-#define DO_IF_TOKEN(token, op)														\
-	if(!strncmp(var_name, token, sizeof(token) / sizeof(char))) 					\
+#define DO_IF_KWD(kwd, op)															\
+	if(!strncmp(var_name, kwd, sizeof(kwd) / sizeof(char))) 						\
 	{																				\
-		PARSE_LOG("Reserved token: %s\n", var_name);								\
+		printf("It's kwd: %s\n", var_name);										\
 																					\
-		if(str[id] == '(')															\
+		if(tokens->data[id].type == OBR)											\
 		{																			\
 			id++;																	\
 			B_tree_node *child = get_add();											\
 																					\
-			if(str[id] == ')')														\
+			if(tokens->data[id].type == CBR)										\
 			{																		\
 				id++;																\
 				return create_node(OP , {.op_value = op}, NULL, child).arg.node;	\
@@ -57,53 +57,30 @@
 		}																			\
 	}
 
-static char *str = NULL;
+static Tokens *tokens = NULL;
 static size_t id = 0;
 
-struct B_tree_node *parse_expr(const char *expression)
+struct B_tree_node *parse_tokens(Tokens *tkns)
 {
-	str = skip_spaces(expression, strlen(expression));
+	tokens = tkns;
 
 	id = 0;
 
 	struct B_tree_node *val = get_add();
 	CHECK_RET(val);
 
-	SYNTAX_CHECK(str[id] == '\0');
+	SYNTAX_CHECK(tokens->data[id].type == END);
 
 	return val;
 }
 
 struct B_tree_node *get_num()
 {
-	btr_elem_t val = 0;
-	size_t old_id = id;
-	bool after_dot = false;
-	size_t after_dot_counter = 0;
+	btr_elem_t val = tokens->data[id].value.num_value;
 
-	while(	('0' <= str[id] && str[id] <= '9') || (str[id] == '.')	)
-	{
-		if(str[id] == '.')
-		{
-			after_dot = true;
-			id++;
-		}
-		else
-		{
-			if(after_dot)
-			{
-				after_dot_counter++;
-			}
+	printf("It's num: %lf\n", val);
 
-			val = val * 10 + (str[id] - '0');
-
-			id++;
-		}
-	}
-
-	val = val / (pow(10, after_dot_counter));
-
-	SYNTAX_CHECK(id > old_id);
+	id++;
 
 	return create_node(NUM, {.num_value = val}, NULL, NULL).arg.node;
 }
@@ -113,32 +90,18 @@ struct B_tree_node *get_add()
 	struct B_tree_node *val = get_mul();
 	CHECK_RET(val);
 
-	while(str[id] == '+' || str[id] == '-')
+	while(	tokens->data[id].type == OP &&
+			(	tokens->data[id].value.op_value == ADD ||
+				tokens->data[id].value.op_value == SUB	)	)
 	{
-		char op = str[id];
+		Ops op = tokens->data[id].value.op_value;
 
 		id++;
 
 		struct B_tree_node *val_2 = get_mul();
 		CHECK_RET(val_2);
 
-		switch(op)
-		{
-			case '+':
-			{
-				val = create_node(OP, {.op_value = ADD}, val, val_2).arg.node;
-				break;
-			}
-			case '-':
-			{
-				val = create_node(OP, {.op_value = SUB}, val, val_2).arg.node;
-				break;
-			}
-			default:
-			{
-				SYNTAX_CHECK(true);
-			}
-		}
+		val = create_node(OP, {.op_value = op}, val, val_2).arg.node;
 	}
 
 	return val;
@@ -149,31 +112,17 @@ struct B_tree_node *get_mul()
 	struct B_tree_node *val = get_pow();
 	CHECK_RET(val);
 
-	while(str[id] == '*' || str[id] == '/')
+	while(	tokens->data[id].type == OP &&
+			(	tokens->data[id].value.op_value == MUL ||
+				tokens->data[id].value.op_value == DIV	)	)
 	{
-		char op = str[id];
+		Ops op = tokens->data[id].value.op_value;
 
 		id++;
 
 		struct B_tree_node *val_2 = get_pow();
 
-		switch(op)
-		{
-			case '*':
-			{
-				val = create_node(OP, {.op_value = MUL}, val, val_2).arg.node;
-				break;
-			}
-			case '/':
-			{
-				val = create_node(OP, {.op_value = DIV}, val, val_2).arg.node;
-				break;
-			}
-			default:
-			{
-				SYNTAX_CHECK(true)
-			}
-		}
+		val = create_node(OP, {.op_value = op}, val, val_2).arg.node;
 	}
 
 	return val;
@@ -181,17 +130,17 @@ struct B_tree_node *get_mul()
 
 struct B_tree_node *get_par()
 {
-	if(str[id] == '(')
+	if(tokens->data[id].type == OBR)
 	{
 		id++;
 		struct B_tree_node *val = get_add();
 		CHECK_RET(val);
 
-		SYNTAX_CHECK(str[id] == ')');
+		SYNTAX_CHECK(tokens->data[id].type == CBR);
 		id++;
 		return val;
 	}
-	else if('0' <= str[id] && str[id] <= '9')
+	else if(tokens->data[id].type == NUM)
 	{
 		return get_num();
 	}
@@ -203,33 +152,50 @@ struct B_tree_node *get_par()
 
 struct B_tree_node *get_id()
 {
-	PARSE_LOG("%s log:\n", __func__);
+	printf("%s log:\n", __func__);
 
-	size_t sym_counter = count_symbols(str + id);
+	char *var_name = tokens->data[id].value.var_value;
 
-	char *var_name = (char *)calloc(sym_counter + 1, sizeof(char));
-	if(var_name == NULL)
+	printf("name: %s\n", var_name);
+
+
+
+	if(tokens->data[id].type == KWD)
 	{
-		REPORT_ERROR("ERROR: allocation error\n");
+		printf("It's KWD.\n");
+		id++;
+
+		if(tokens->data[id].type == OBR)
+		{
+			printf("OBR ok\n");
+
+			id++;
+			B_tree_node *child = get_add();
+
+			if(tokens->data[id].type == CBR)
+			{
+				printf("CBR ok\n");
+
+				id++;
+				return create_node(KWD , {.var_value = var_name}, NULL, child).arg.node;
+			}
+			else
+			{
+				SYNTAX_ERROR;
+			}
+		}
+		else
+		{
+			SYNTAX_ERROR;
+		}
 	}
-
-	memcpy(var_name, str + id, sym_counter);
-
-	var_name[sym_counter] = '\0';
-
-	id += sym_counter;
-	PARSE_LOG("sym_counter = %lu\n", sym_counter);
-
-	DO_IF_TOKEN("sin", SIN)
-	DO_IF_TOKEN("cos", COS)
-	DO_IF_TOKEN("sqrt", SQRT)
-	DO_IF_TOKEN("ln", LN)
 	else
 	{
-		PARSE_LOG("var_name: %s\n\n", var_name);
-
+		id++;
 		return create_node(VAR , {.var_value = var_name}, NULL, NULL).arg.node;
 	}
+
+
 }
 
 struct B_tree_node *get_pow()
@@ -237,7 +203,7 @@ struct B_tree_node *get_pow()
 	struct B_tree_node *val = get_par();
 	CHECK_RET(val);
 
-	while(str[id] == '^')
+	while(	(tokens->data[id].type == OP) || (tokens->data[id].value.op_value == POW)	)
 	{
 		id++;
 

@@ -1,6 +1,10 @@
 #ifndef FRONTEND_H
 #define FRONTEND_H
 
+
+#include "b_tree.h"
+#include "recursive_parser.h"
+
 typedef enum
 {
     FRD_ALL_GOOD            = 0, /**< No errors occurred. */
@@ -11,6 +15,6 @@ typedef enum
 	FRD_UKNOWN_OP           = 1 << 4,
 } frd_err_t;
 
-frd_err_t tokenize(const char *file);
+Tokens *tokenize(const char *file, frd_err_t error_code);
 
 #endif

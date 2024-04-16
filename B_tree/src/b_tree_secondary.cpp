@@ -84,6 +84,15 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
+		case KWD:
+		{
+			nd_description->color = AGRESSIVE_RED;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: KWD | val: %s} | {L: %p | R: %p}}",
+					node, node->value.var_value, node->left, node->right);
+			break;
+		}
 		default:
 		{
 			fprintf(stderr, "Unknown node type\n");

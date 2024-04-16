@@ -4,7 +4,14 @@
 #include "b_tree.h"
 #include "utils.h"
 
-struct B_tree_node *parse_expr(const char *str);
+struct Tokens
+{
+	B_tree_node *data;
+	size_t size;
+	size_t capacity;
+};
+
+struct B_tree_node *parse_tokens(Tokens *tokens);
 struct B_tree_node *get_num();
 struct B_tree_node *get_add();
 struct B_tree_node *get_mul();

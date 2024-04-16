@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 #include "frontend.h"
-#include "b_tree.h"
 
 int main(int argc, const char *argv[])
 {
@@ -12,7 +11,15 @@ int main(int argc, const char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	frd_err_t error = tokenize(argv[1]);
+	frd_err_t error = FRD_ALL_GOOD;
+
+	Tokens *tokens = tokenize(argv[1], error);
+
+	B_tree_node *root = parse_tokens(tokens);
+
+	GR_DUMP_CODE_GEN(root);
+
+	// check if correct
 
 	if(error != FRD_ALL_GOOD)
 	{

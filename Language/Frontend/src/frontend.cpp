@@ -8,7 +8,7 @@
 
 #define CHECK_ERROR\
 	if(error_code != FRD_ALL_GOOD)\
-		return error_code;
+		return NULL;
 
 #define LEFT_AMOUNT\
 	(file_len - (size_t)(symbs - symbs_start))
@@ -18,14 +18,16 @@
 	{														\
 		LOG("ERROR:\n\tUnable to allocate "#ptr".\n");		\
 															\
-		return FRD_UNABLE_TO_ALLOCATE;						\
+		error_code = FRD_UNABLE_TO_ALLOCATE;				\
+		return NULL;										\
 	}
 
-#define FILE_PTR_CHECK(ptr)							\
-	if(ptr == NULL)									\
-	{												\
-		fprintf(stderr, "Unable to open "#ptr"\n");	\
-		return FRD_UNABLE_TO_OPEN_FILE;				\
+#define FILE_PTR_CHECK(ptr)								\
+	if(ptr == NULL)										\
+	{													\
+		fprintf(stderr, "Unable to open "#ptr"\n");		\
+		error_code = FRD_UNABLE_TO_OPEN_FILE;			\
+		return NULL;									\
 	}
 
 #define FREAD_CHECK(read_elems, amount)										\
@@ -35,15 +37,15 @@
 		LOG("\t expected amount: %lu.\n", amount);							\
 		LOG("\t read amount: %lu.\n", read_elems);							\
 																			\
-		return FRD_INVALID_FREAD;											\
+		error_code = FRD_INVALID_FREAD;										\
+		return NULL;														\
 	}
 
-frd_err_t tokenize(const char *file)
+Tokens *tokenize(const char *file, frd_err_t error_code = FRD_ALL_GOOD)
 {
-	frd_err_t error_code = FRD_ALL_GOOD;
-
-	Tokens tokens = {};
-	CALL(init_tokens(&tokens));
+	Tokens *tokens = NULL;
+	CALLOC(tokens, 1, Tokens);
+	CALL(init_tokens(tokens));
 
 	WITH_OPEN
 	(
@@ -66,7 +68,7 @@ frd_err_t tokenize(const char *file)
 
 		while((size_t)(symbs - symbs_start) < file_len)
 		{
-			LOG("Current symbol: %c\n", *symbs);
+			LOG("\nCurrent symbol: %c\n", *symbs);
 
 			if(is_blank(*symbs))
 			{
@@ -82,7 +84,7 @@ frd_err_t tokenize(const char *file)
 
 				LOG("\tnum: %lf\n", num);
 
-				CALL(add_node(&tokens, NUM, {.num_value = num}));
+				CALL(add_node(tokens, NUM, {.num_value = num}));
 
 				symbs = skip_nums(symbs);
 			}
@@ -90,7 +92,7 @@ frd_err_t tokenize(const char *file)
 			{
 				LOG("It's OBR.\n");
 
-				CALL(add_node(&tokens, OBR, {.num_value = 0}));
+				CALL(add_node(tokens, OBR, {.num_value = 0}));
 
 				symbs++;
 			}
@@ -98,7 +100,7 @@ frd_err_t tokenize(const char *file)
 			{
 				LOG("It's CBR.\n");
 
-				CALL(add_node(&tokens, CBR, {.num_value = 0}));
+				CALL(add_node(tokens, CBR, {.num_value = 0}));
 
 				symbs++;
 			}
@@ -106,7 +108,7 @@ frd_err_t tokenize(const char *file)
 			{
 				LOG("It's OCBR.\n");
 
-				CALL(add_node(&tokens, OCBR, {.num_value = 0}));
+				CALL(add_node(tokens, OCBR, {.num_value = 0}));
 
 				symbs++;
 			}
@@ -114,7 +116,7 @@ frd_err_t tokenize(const char *file)
 			{
 				LOG("It's CCBR.\n");
 
-				CALL(add_node(&tokens, CCBR, {.num_value = 0}));
+				CALL(add_node(tokens, CCBR, {.num_value = 0}));
 
 				symbs++;
 			}
@@ -122,7 +124,7 @@ frd_err_t tokenize(const char *file)
 			{
 				LOG("It's SMC.\n");
 
-				CALL(add_node(&tokens, SMC, {.num_value = 0}));
+				CALL(add_node(tokens, SMC, {.num_value = 0}));
 
 				symbs++;
 			}
@@ -133,7 +135,7 @@ frd_err_t tokenize(const char *file)
 				Ops op = get_op(*symbs, error_code);
 				CHECK_ERROR;
 
-				CALL(add_node(&tokens, OP, {.op_value = op}));
+				CALL(add_node(tokens, OP, {.op_value = op}));
 
 				symbs++;
 			}
@@ -144,7 +146,8 @@ frd_err_t tokenize(const char *file)
 			}
 			else
 			{
-				char token[MAX_TOKEN_SIZE] = {};
+				char *token = NULL;
+				CALLOC(token, MAX_TOKEN_SIZE, char);
 
 				size_t amount = 0;
 
@@ -152,16 +155,15 @@ frd_err_t tokenize(const char *file)
 
 				LOG("\ttoken: %s\n", token);
 
-				CALL(add_token(&tokens, token));
+				CALL(add_token(tokens, token));
 
 				symbs += amount;
 			}
 		}
-
-
 	)
 
-	dump_tokens(&tokens);
+	CALL(add_node(tokens, END, {.num_value = 0}));
+	dump_tokens(tokens);
 
-	return FRD_ALL_GOOD;
+	return tokens;
 }

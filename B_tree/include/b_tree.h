@@ -38,6 +38,7 @@ enum Node_type
 	CCBR = 6,
 	SMC = 7,
 	KWD = 8,
+	END = 9,
 };
 
 enum Ops
@@ -100,6 +101,8 @@ const char * const LIGHT_BLUE     = "#2595FF";
 const char * const CORAL_PINK     = "#F08080";
 const char * const MARGENGO       = "#48565D";
 const char * const RED_PINK       = "#FF5555";
+const char * const AGRESSIVE_RED  = "#E72900";
+
 
 
 Uni_ret create_node     (Node_type type, Node_value value, B_tree_node *left_child,

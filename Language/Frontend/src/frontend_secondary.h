@@ -2,9 +2,8 @@
 #define FRONTEND_SECONDARY_H
 
 #include "frontend.h"
-#include "b_tree.h"
 
-const size_t kwds_amount = 1;
+const size_t kwds_amount = 5;
 
 const char * const kwds[] =
 {
@@ -13,13 +12,6 @@ const char * const kwds[] =
 	"sin",
 	"cos",
 	"ln",
-};
-
-struct Tokens
-{
-	B_tree_node *data;
-	size_t size;
-	size_t capacity;
 };
 
 const size_t STARTER_TOKENS_AMOUNT = 5;
