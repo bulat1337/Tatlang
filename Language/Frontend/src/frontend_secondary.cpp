@@ -24,7 +24,7 @@
 		return FRD_UNABLE_TO_ALLOCATE;						\
 	}
 
-void write_log(const char *file_name, const char *fmt, ...)
+void frd_write_log(const char *file_name, const char *fmt, ...)
 {
     static FILE *log_file = fopen(file_name, "w");
 
@@ -156,7 +156,7 @@ frd_err_t add_node(Tokens *tokens, Node_type type, Node_value value)
 	return FRD_ALL_GOOD;
 }
 
-Ops get_op(char sym, frd_err_t error_code = FRD_ALL_GOOD)
+Ops get_op(char sym, frd_err_t *error_code)
 {
 	switch(sym)
 	{
@@ -186,7 +186,7 @@ Ops get_op(char sym, frd_err_t error_code = FRD_ALL_GOOD)
 		}
 		default:
 		{
-			error_code = FRD_UKNOWN_OP;
+			*error_code = FRD_UKNOWN_OP;
 			return ASS;
 		}
 	}
@@ -227,6 +227,7 @@ bool is_kwd(char *token)
 
 void dump_tokens(Tokens *tokens)
 {
+	LOG("\nTokens:\n");
 	FOR(size_t token_id = 0; token_id < tokens->size; token_id++)
 	{
 		LOG("%p\n", tokens->data[token_id]);
@@ -279,6 +280,11 @@ void dump_tokens(Tokens *tokens)
 			case SMC:
 			{
 				LOG("\tSMC\n");
+				break;
+			}
+			case END:
+			{
+				LOG("\tEND\n");
 				break;
 			}
 			default:

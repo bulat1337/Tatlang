@@ -1,6 +1,9 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#define LEN(str)\
+	sizeof(str) / sizeof(char) - 1
+
 #define CALL(...)				\
 	error_code = __VA_ARGS__;	\
 	CHECK_ERROR;

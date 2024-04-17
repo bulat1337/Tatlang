@@ -132,7 +132,7 @@ Tokens *tokenize(const char *file, frd_err_t error_code = FRD_ALL_GOOD)
 			{
 				LOG("It's OP.\n");
 
-				Ops op = get_op(*symbs, error_code);
+				Ops op = get_op(*symbs, &error_code);
 				CHECK_ERROR;
 
 				CALL(add_node(tokens, OP, {.op_value = op}));
@@ -149,7 +149,7 @@ Tokens *tokenize(const char *file, frd_err_t error_code = FRD_ALL_GOOD)
 				char *token = NULL;
 				CALLOC(token, MAX_TOKEN_SIZE, char);
 
-				size_t amount = 0;
+				int amount = 0;
 
 				sscanf(symbs, "%[a-zA-Z0-9,_,$]%n", token, &amount);
 

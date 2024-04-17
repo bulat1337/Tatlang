@@ -78,7 +78,7 @@ Uni_ret gr_dump_code_gen(B_tree_node *root, const char *b_tree_name)
 	};
 	free(file_name);
 
-	if(result.arg.file_ptr == NULL) //macro + stderr -> log_file
+	if(result.arg.file_ptr == NULL)
 	{
 		fprintf(stderr, "Unable to open list_graphic_dump.dot\n");
 

@@ -4,6 +4,7 @@ FRD_SUBDIRS = ../Utils/ ../B_tree/ ../Recursive_parser/ ../File_parser/ ../Langu
 BKD_SUBDIRS = ../CPU/build/ ../Language/Backend/
 
 TXT_JUNK = $(wildcard *.txt)
+PNG_JUNK = $(wildcard *.png)
 BIN_JUNK = $(wildcard *.bin)
 EXE_JUNK = $(wildcard ../executables/*.out)
 LIB_JUNK = $(wildcard ../libs/*.a)
@@ -18,7 +19,7 @@ bkd:
 	@for dir in $(BKD_SUBDIRS); do $(MAKE) -C $$dir; done
 
 clean_junk:
-	@rm $(TXT_JUNK) $(BIN_JUNK) $(EXE_JUNK) $(LIB_JUNK)
+	@rm $(TXT_JUNK) $(BIN_JUNK) $(EXE_JUNK) $(LIB_JUNK) $(PNG_JUNK)
 
 clean_all:
 	@for dir in $(SUBDIRS); do $(MAKE) clean -C $$dir; done

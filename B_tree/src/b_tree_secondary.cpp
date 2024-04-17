@@ -1,8 +1,8 @@
 #include "b_tree_secondary.h"
 #include "utils.h"
 
-#define LEN(str)\
-	sizeof(str) / sizeof(char)
+// #define LEN(str)\
+// 	sizeof(str) / sizeof(char)
 
 void node_delete(struct B_tree_node *node)
 {
@@ -93,6 +93,60 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
+		case SMC:
+		{
+			nd_description->color = NEUTRAL_GREY;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: SMC | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case OBR:
+		{
+			nd_description->color = NEUTRAL_GREY;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: OBR | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case CBR:
+		{
+			nd_description->color = NEUTRAL_GREY;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: CBR | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case OCBR:
+		{
+			nd_description->color = NEUTRAL_GREY;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: OCBR | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case CCBR:
+		{
+			nd_description->color = NEUTRAL_GREY;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: CCBR | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case END:
+		{
+			nd_description->color = NEUTRAL_GREY;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: END | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
 		default:
 		{
 			fprintf(stderr, "Unknown node type\n");
@@ -161,6 +215,7 @@ char *get_operation_token(enum Ops op_type)
 		CASE(SIN)
 		CASE(COS)
 		CASE(SQRT)
+		CASE(ASS)
 		default:
 		{
 			strncpy(operation_token, "UNKNOWN", OP_TOKEN_SIZE);
@@ -226,6 +281,11 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 			DUMP("          SMC");
 			break;
 		}
+		case END:
+		{
+			DUMP("          END");
+			break;
+		}
 		case OP:
 		{
 			DUMP("          OP");
@@ -248,6 +308,7 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 				CASE(SIN)
 				CASE(COS)
 				CASE(SQRT)
+				CASE(ASS)
 				CASE(DO_NOTHING)
 				default:
 				{
@@ -261,6 +322,12 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 		case VAR:
 		{
 			DUMP("          VAR");
+			DUMP("               %s", node->value.var_value);
+			break;
+		}
+		case KWD:
+		{
+			DUMP("          KWD");
 			DUMP("               %s", node->value.var_value);
 			break;
 		}

@@ -21,9 +21,9 @@ const int    POISON_OP             = -666;
 	256
 
 #define LOG(...)\
-	write_log("frontend_log", __VA_ARGS__);
+	frd_write_log("frontend_log", __VA_ARGS__);
 
-void write_log(const char *file_name, const char *fmt, ...);
+void frd_write_log(const char *file_name, const char *fmt, ...);
 
 char *skip_nums(char *symbs);
 
@@ -41,7 +41,7 @@ void tokens_dtor(Tokens *tokens);
 
 frd_err_t add_node(Tokens *tokens, Node_type type, Node_value value);
 
-Ops get_op(char sym, frd_err_t error_code);
+Ops get_op(char sym, frd_err_t *error_code);
 
 frd_err_t add_token(Tokens *tokens, char *token);
 

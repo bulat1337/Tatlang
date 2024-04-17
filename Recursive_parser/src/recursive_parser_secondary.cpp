@@ -16,79 +16,7 @@
 	(*(cur_str + sym_counter) == '_') ||										\
 	(*(cur_str + sym_counter) == '$')
 
-size_t count_symbols(const char *cur_str)
-{
-	PARSE_LOG("%s log:\n", __func__);
-	size_t sym_counter = 0;
-
-	PARSE_LOG("reading symbols:\n");
-
-	if(FIRST_SYM_COND)
-	{
-		PARSE_LOG("%c ", *(cur_str));
-		sym_counter++;
-	}
-	else
-	{
-		exit(EXIT_FAILURE);
-	}
-
-	while(SYM_COND)
-	{
-		PARSE_LOG("%c ", *(cur_str + sym_counter));
-		sym_counter++;
-	}
-
-	PARSE_LOG("\n\n");
-
-	return sym_counter;
-}
-
-char *skip_spaces(const char *str, size_t size)
-{
-	size_t copy_size = count_non_spaces(str, size);
-
-	char *str_copy = (char *)calloc(copy_size + 1, sizeof(char));
-	if(str_copy == NULL)
-	{
-		PARSE_LOG("ERROR: Unable to allocate memory for str_copy\n");
-		return NULL;
-	}
-
-	size_t copy_ID = 0;
-	for(size_t sym_ID = 0; sym_ID < size; sym_ID++)
-	{
-		if(str[sym_ID] != ' ')
-		{
-			str_copy[copy_ID] = str[sym_ID];
-			copy_ID++;
-		}
-		else
-		{
-			;
-		}
-	}
-
-	str_copy[copy_size] = '\0';
-
-	return str_copy;
-}
-
-size_t count_non_spaces(const char *str, size_t size)
-{
-	size_t non_spaces = 0;
-	for(size_t sym_ID = 0; sym_ID < size; sym_ID++)
-	{
-		if(str[sym_ID] != ' ')
-		{
-			non_spaces++;
-		}
-	}
-
-	return non_spaces;
-}
-
-void write_log(const char *file_name, const char *fmt, ...)
+void rec_write_log(const char *file_name, const char *fmt, ...)
 {
     static FILE *log_file = fopen(file_name, "w");
 
@@ -102,11 +30,295 @@ void write_log(const char *file_name, const char *fmt, ...)
 
     va_start(args, fmt);
 
-	// fprintf(log_file, "file: %s func: %s on line : %d\n", file_name, func_name, line);
     vfprintf(log_file, fmt, args);
 
     va_end(args);
 }
+
+B_tree_node *get_cmd()
+{
+	B_tree_node *cmd = NULL;
+
+	if(CUR_TYPE == KWD)
+	{
+		PARSE_LOG("It's KWD there, getting condition action.\n");
+
+		cmd = get_cond();
+		CHECK_RET(cmd);
+
+		return CR_SMC(cmd, NULL);
+	}
+	else
+	{
+		PARSE_LOG("Getting assignment.\n");
+
+		cmd = get_ass();
+		CHECK_RET(cmd);
+
+		if(CUR_TYPE == SMC)
+		{
+			PARSE_LOG("SMC ok.\n");
+
+			id++;
+
+			return CR_SMC(cmd, NULL);
+		}
+		else
+		{
+			SYNTAX_ERROR;
+		}
+	}
+}
+
+B_tree_node *get_cond()
+{
+	PARSE_LOG("Getting id.\n");
+	B_tree_node *kwd = get_id();
+	CHECK_RET(kwd);
+
+	SYNTAX_CHECK(	IS_KWD(kwd->value.var_value, "while") ||
+					IS_KWD(kwd->value.var_value, "if")	);
+
+	if(CUR_TYPE == OBR)
+	{
+		PARSE_LOG("OBR ok.\n");
+		id++;
+
+		PARSE_LOG("Getting brace expression.\n");
+		B_tree_node *br_expr = get_add();
+		CHECK_RET(br_expr);
+
+		if(CUR_TYPE == CBR)
+		{
+			PARSE_LOG("CBR ok\n");
+			id++;
+
+			if(CUR_TYPE == OCBR)
+			{
+				PARSE_LOG("OCBR detected.\n");
+				id++;
+
+				PARSE_LOG("Getting first command in cond scope.\n");
+
+				B_tree_node *root = get_cmd();
+
+				B_tree_node *cur_node = root;
+
+				while(CUR_TYPE != CCBR)
+				{
+					PARSE_LOG("Getting command in cond scope.\n");
+					cur_node->right = get_cmd();
+					CHECK_RET(cur_node->right);
+					cur_node = cur_node->right;
+				}
+
+				PARSE_LOG("CCBR detected.\n");
+				id++;
+
+				return CR_KWD(kwd->value.var_value, br_expr, root);
+			}
+			else
+			{
+				PARSE_LOG("Getting command for cond scope.\n");
+				B_tree_node *cmd = get_cmd();
+				CHECK_RET(cmd);
+
+				return CR_KWD(kwd->value.var_value, br_expr, cmd);
+			}
+		}
+		else
+		{
+			SYNTAX_ERROR;
+		}
+	}
+	else
+	{
+		SYNTAX_ERROR;
+	}
+}
+
+B_tree_node *get_ass()
+{
+	B_tree_node *var = get_id();
+	CHECK_RET(var);
+
+	if(CUR_TYPE == OP && CUR_OP == ASS)
+	{
+		id++;
+	}
+	else
+	{
+		SYNTAX_ERROR;
+	}
+
+	B_tree_node *expr = get_add();
+	CHECK_RET(expr);
+
+	return CR_ASS(var, expr);
+}
+
+B_tree_node *get_num()
+{
+	btr_elem_t val = CUR_NUM;
+
+	PARSE_LOG("It's num: %lf\n", val);
+
+	id++;
+
+	return CR_NUM(val, NULL, NULL);
+}
+
+B_tree_node *get_add()
+{
+	B_tree_node *val = get_mul();
+	CHECK_RET(val);
+
+	while(	CUR_TYPE == OP &&
+			(	CUR_OP == ADD ||
+				CUR_OP == SUB	)	)
+	{
+		PARSE_LOG("It's ADD or SUB.\n");
+		Ops op = CUR_OP;
+
+		id++;
+
+		B_tree_node *val_2 = get_mul();
+		CHECK_RET(val_2);
+
+		val = CR_OP(op, val, val_2);
+	}
+
+	return val;
+}
+
+B_tree_node *get_mul()
+{
+	B_tree_node *val = get_pow();
+	CHECK_RET(val);
+
+	while(	CUR_TYPE == OP &&
+			(	CUR_OP == MUL ||
+				CUR_OP == DIV	)	)
+	{
+		PARSE_LOG("It's MUL or DIV.\n");
+		Ops op = CUR_OP;
+
+		id++;
+
+		B_tree_node *val_2 = get_pow();
+		CHECK_RET(val_2);
+
+		val = CR_OP(op, val, val_2);
+	}
+
+	return val;
+}
+
+B_tree_node *get_par()
+{
+	if(CUR_TYPE == OBR)
+	{
+		id++;
+		B_tree_node *val = get_add();
+		CHECK_RET(val);
+
+		SYNTAX_CHECK(CUR_TYPE == CBR);
+		id++;
+
+		return val;
+	}
+	else if(CUR_TYPE == NUM)
+	{
+		B_tree_node *val = get_num();
+		CHECK_RET(val);
+
+		return val;
+	}
+	else
+	{
+		B_tree_node *val = get_id();
+		CHECK_RET(val);
+
+		return val;
+	}
+}
+
+B_tree_node *get_id()
+{
+	PARSE_LOG("%s log:\n", __func__);
+
+	char *var_name = tokens->data[id].value.var_value;
+
+	PARSE_LOG("name: %s\n", var_name);
+
+
+
+	if(CUR_TYPE == KWD)
+	{
+		PARSE_LOG("It's KWD.\n");
+		id++;
+
+		if(	!(IS_KWD(var_name, "while") || IS_KWD(var_name, "if")))
+		{
+			if(CUR_TYPE == OBR)
+			{
+				PARSE_LOG("OBR ok\n");
+
+				id++;
+				B_tree_node *child = get_add();
+				CHECK_RET(child);
+
+				if(CUR_TYPE == CBR)
+				{
+					PARSE_LOG("CBR ok\n");
+
+					id++;
+					return CR_KWD(var_name, NULL, child);
+				}
+				else
+				{
+					SYNTAX_ERROR;
+				}
+			}
+			else
+			{
+				SYNTAX_ERROR;
+			}
+		}
+		else
+		{
+			PARSE_LOG("It's 'while' of 'if'.\n");
+
+			return CR_KWD(var_name, NULL, NULL);
+		}
+	}
+	else
+	{
+		id++;
+		return CR_VAR(var_name, NULL, NULL);
+	}
+
+
+}
+
+B_tree_node *get_pow()
+{
+	B_tree_node *val = get_par();
+	CHECK_RET(val);
+
+	while(	(CUR_TYPE == OP) && (CUR_OP == POW)	)
+	{
+		id++;
+
+		B_tree_node *val_2 = get_par();
+		CHECK_RET(val_2);
+
+		val = CR_OP(POW, val, val_2);
+	}
+
+	return val;
+}
+
 
 #undef SYM_COND
 #undef FIRST_SYM_COND
