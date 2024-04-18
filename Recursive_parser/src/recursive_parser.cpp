@@ -20,18 +20,18 @@ B_tree_node *parse_tokens(Tokens *passed_tokens)
 		return CR_SMC(NULL, NULL);
 	}
 
-	PARSE_LOG("Getting first command.\n");
+	PARSE_LOG("Getting first scope.\n");
 
-	B_tree_node *root = get_cmd();
+	B_tree_node *root = get_scope();
 	CHECK_RET(root);
 
 	B_tree_node *cur_node = root;
-	CHECK_RET(cur_node);
 
 	while(CUR_TYPE != END)
 	{
-		PARSE_LOG("Getting command.\n");
-		cur_node->right = get_cmd();
+		PARSE_LOG("Getting scope.\n");
+		B_tree_node *scope_end = get_scope_end(cur_node->right);
+		scope_end->right = get_scope();
 		cur_node = cur_node->right;
 	}
 

@@ -1,4 +1,4 @@
-SUBDIRS = ../Utils/ ../B_tree/ ../Recursive_parser/ ../CPU/build/ ../Language/Frontend/ ../Language/Backend/
+SUBDIRS = ../File_parser/ ../Utils/ ../B_tree/ ../Recursive_parser/ ../CPU/build/ ../Language/Frontend/ ../Language/Backend/
 
 FRD_SUBDIRS = ../Utils/ ../B_tree/ ../Recursive_parser/ ../File_parser/ ../Language/Frontend/
 BKD_SUBDIRS = ../CPU/build/ ../Language/Backend/

@@ -35,6 +35,47 @@ void rec_write_log(const char *file_name, const char *fmt, ...)
     va_end(args);
 }
 
+B_tree_node *get_scope()
+{
+	if(CUR_TYPE == OCBR)
+	{
+		id++;
+		PARSE_LOG("There is scope.\n");
+		PARSE_LOG("Getting first command.\n");
+
+		B_tree_node *root = get_cmd();
+		CHECK_RET(root);
+
+		B_tree_node *cur_node = root;
+		CHECK_RET(cur_node);
+
+		while(CUR_TYPE != CCBR)
+		{
+			PARSE_LOG("Getting cmd.\n");
+			cur_node->right = get_cmd();
+			cur_node = cur_node->right;
+		}
+
+		PARSE_LOG("CCBR for scope ok.\n");
+
+		cur_node->right = create_node(SCE, {.num_value = 0}, NULL, NULL).arg.node;
+
+		id++;
+
+		root->type = SCS;
+		return root;
+	}
+	else
+	{
+		PARSE_LOG("Getting command.\n");
+
+		B_tree_node *root = get_cmd();
+		CHECK_RET(root);
+
+		return root;
+	}
+}
+
 B_tree_node *get_cmd()
 {
 	B_tree_node *cmd = NULL;
@@ -317,6 +358,20 @@ B_tree_node *get_pow()
 	}
 
 	return val;
+}
+
+B_tree_node *get_scope_end(B_tree_node *root)
+{
+	if(root == NULL)
+	{
+		return root;
+	}
+	while(root->right != NULL)
+	{
+		root = root->right;
+	}
+
+	return root;
 }
 
 

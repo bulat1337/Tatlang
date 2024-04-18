@@ -39,6 +39,8 @@ enum Node_type
 	SMC = 7,
 	KWD = 8,
 	END = 9,
+	SCS = 10,
+	SCE = 11,
 };
 
 enum Ops
@@ -103,6 +105,7 @@ const char * const MARGENGO       = "#48565D";
 const char * const RED_PINK       = "#FF5555";
 const char * const AGRESSIVE_RED  = "#E72900";
 const char * const NEUTRAL_GREY   = "#A4A4A4";
+const char * const PURPLE   = "#B700EC";
 
 
 

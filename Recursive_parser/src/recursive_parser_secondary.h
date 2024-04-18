@@ -33,6 +33,12 @@ extern size_t id;
 #define CR_VAR(val, left_child, right_child)\
 	create_node(VAR, {.var_value = val}, left_child, right_child).arg.node;
 
+#define CR_SCS(left_child, right_child)\
+	create_node(SCS, {.num_value = 0}, left_child, right_child).arg.node;
+
+#define CR_SCE\
+	create_node(SCE, {.num_value = 0}, NULL, NULL).arg.node;
+
 #define IS_KWD(var, check_kwd)\
 	!strncmp(var, check_kwd, LEN(check_kwd))
 
@@ -92,24 +98,28 @@ extern size_t id;
 	rec_write_log("parse_log.txt", __VA_ARGS__);
 
 void         rec_write_log       (const char *file_name, const char *fmt, ...);
-    
+
 B_tree_node *get_cmd             ();
-    
+
 B_tree_node *get_cond            ();
-    
+
 B_tree_node *get_ass             ();
-    
+
 B_tree_node *get_num             ();
-    
+
 B_tree_node *get_add             ();
-    
+
 B_tree_node *get_mul             ();
-    
+
 B_tree_node *get_par             ();
-    
+
 B_tree_node *get_id              ();
-    
+
 B_tree_node *get_pow             ();
+
+B_tree_node *get_scope           ();
+
+B_tree_node *get_scope_end           (B_tree_node *root);
 
 
 #endif

@@ -102,6 +102,24 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->left, node->right);
 			break;
 		}
+		case SCS:
+		{
+			nd_description->color = PURPLE;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: SCS | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case SCE:
+		{
+			nd_description->color = PURPLE;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: SCE | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
 		case OBR:
 		{
 			nd_description->color = NEUTRAL_GREY;
@@ -284,6 +302,16 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 		case END:
 		{
 			DUMP("          END");
+			break;
+		}
+		case SCS:
+		{
+			DUMP("          SCS");
+			break;
+		}
+		case SCE:
+		{
+			DUMP("          SCE");
 			break;
 		}
 		case OP:
