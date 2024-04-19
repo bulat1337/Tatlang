@@ -8,7 +8,7 @@ Uni_ret create_node(Node_type type, Node_value value, B_tree_node *left_child,
 	Uni_ret result =
 	{
 		.arg.node = allocate_node_memory(),
-		.error_code = ALL_GOOD,
+		.error_code = B_TREE_ALL_GOOD,
 	};
 
 	if(result.arg.node == NULL)
@@ -43,7 +43,7 @@ error_t add_child(struct B_tree_node *parent, struct B_tree_node *child, bool is
 		parent->left  = child;
 	}
 
-	return ALL_GOOD;
+	return B_TREE_ALL_GOOD;
 }
 
 error_t destroy_subtree(struct B_tree_node *parent_node, bool is_right_child)
@@ -65,7 +65,7 @@ error_t destroy_subtree(struct B_tree_node *parent_node, bool is_right_child)
 	}
 
 
-	return ALL_GOOD;
+	return B_TREE_ALL_GOOD;
 }
 
 Uni_ret gr_dump_code_gen(B_tree_node *root, const char *b_tree_name)
@@ -73,7 +73,7 @@ Uni_ret gr_dump_code_gen(B_tree_node *root, const char *b_tree_name)
 	char *file_name = create_file_name(b_tree_name, ".dot");
 	Uni_ret result =
 	{
-		.error_code   = ALL_GOOD,
+		.error_code   = B_TREE_ALL_GOOD,
 		.arg.file_ptr = fopen(file_name, "w"),
 	};
 	free(file_name);
@@ -82,7 +82,7 @@ Uni_ret gr_dump_code_gen(B_tree_node *root, const char *b_tree_name)
 	{
 		fprintf(stderr, "Unable to open list_graphic_dump.dot\n");
 
-		result.error_code = UNABLE_TO_OPEN_FILE;
+		result.error_code = B_TREE_UNABLE_TO_OPEN_FILE;
 		return result;
 	}
 
@@ -123,7 +123,7 @@ Uni_ret gr_dump_code_gen(B_tree_node *root, const char *b_tree_name)
 	{
 		result.error_code = print_regular_nodes(root, &nd_description, result.arg.file_ptr);
 
-		if(result.error_code != ALL_GOOD)
+		if(result.error_code != B_TREE_ALL_GOOD)
 		{
 			free(nd_description.label);
 			fclose(result.arg.file_ptr);
@@ -143,7 +143,7 @@ Uni_ret gr_dump_code_gen(B_tree_node *root, const char *b_tree_name)
 
 	result.error_code = compile_dot(b_tree_name);
 
-	if(result.error_code != ALL_GOOD)
+	if(result.error_code != B_TREE_ALL_GOOD)
 	{
 		return result;
 	}
@@ -162,7 +162,7 @@ error_t txt_dump(struct B_tree_node *root, const char *name)
 	free(file_name);
 	if(dump_file == NULL)
 	{
-		return UNABLE_TO_OPEN_FILE;
+		return B_TREE_UNABLE_TO_OPEN_FILE;
 	}
 
 	DUMP("address:");
@@ -175,7 +175,7 @@ error_t txt_dump(struct B_tree_node *root, const char *name)
 
 	#undef DUMP
 
-	return ALL_GOOD;
+	return B_TREE_ALL_GOOD;
 }
 
 // struct Construct_b_tree_result construct_b_tree(const char *data_base_file_name)
@@ -183,14 +183,14 @@ error_t txt_dump(struct B_tree_node *root, const char *name)
 // 	WRITE_IN_LOG_FILE("construct_b_tree log:\n");
 // 	Construct_b_tree_result result =
 // 	{
-// 		.error_code = ALL_GOOD,
+// 		.error_code = B_TREE_ALL_GOOD,
 // 	};
 //
 // 	FILE *data_base = fopen(data_base_file_name, "r");
 // 	if (data_base == NULL)
 // 	{
 // 		fprintf(stderr, "I cant open ur data base(%s)!\n", data_base_file_name);
-// 		result.error_code = AKI_UNABLE_TO_OPEN_FILE;
+// 		result.error_code = AKI_B_TREE_UNABLE_TO_OPEN_FILE;
 //
 // 		return result;
 // 	}

@@ -1,6 +1,8 @@
 #ifndef SPU_ADDITIONAL
 #define SPU_ADDITIONAL
 
+#include "utils.h"
+
 /**
  * @file SPU_additional.h
  * @brief Additional functions for the SPU program.
@@ -9,6 +11,28 @@
 #include "SPU.h"
 #include "secondary.h"
 #include "commands.h"
+
+/**
+ * @brief Macro to log messages to a file.
+ *
+ * This macro simplifies logging by automatically passing file name, function name, and line number.
+ * Usage: LOG("Message to log");
+ */
+#define LOG(...)\
+	spu_write_log(__FILE__, __func__, __LINE__, __VA_ARGS__);
+
+/**
+ * @brief Logs a message to a file.
+ *
+ * Logs a message to a file named "log.txt" with the specified format and additional information.
+ *
+ * @param file_name The name of the file where the log message originates.
+ * @param func_name The name of the function where the log message originates.
+ * @param line The line number in the source file where the log message originates.
+ * @param fmt The format string for the log message.
+ * @param ... Additional arguments to be formatted according to the format string.
+ */
+void spu_write_log(const char *file_name, const char *func_name, int line, const char *fmt, ...);
 
 /**
  * @def CHECK_ERROR(result)
@@ -33,26 +57,12 @@
 	error_code = __VA_ARGS__;	\
 	CHECK_ERROR;
 
-/**
- * @def FREAD(buf, elem_size, amount, file_ptr)
- * @brief Macro to read from a file and check the number of read elements.
- *
- * This macro reads a specified amount of elements from a file into a buffer.
- * It then checks if the expected number of elements were read and logs an error
- * if the read operation is not successful.
- *
- * @param buf Pointer to the buffer to store the read elements.
- * @param elem_size Size of each element to read.
- * @param amount Number of elements to read.
- * @param file_ptr Pointer to the file to read from.
- */
-#define FREAD(buf, elem_size, amount, file_ptr)\
-	size_t read_elems = fread(buf, elem_size, amount, file_ptr);	\
+#define FREAD_CHECK(read_elems, amount)								\
 	if(read_elems != amount)										\
 	{																\
-		CPU_LOG("ERROR: fread read unexpected amount of elems.\n");	\
-		CPU_LOG("\t expected amount: %lu.\n", amount);				\
-		CPU_LOG("\t read amount: %lu.\n", read_elems);				\
+		LOG("ERROR: fread read unexpected amount of elems.\n");		\
+		LOG("\t expected amount: %lu.\n", amount);					\
+		LOG("\t read amount: %lu.\n", read_elems);					\
 																	\
 		return SPU_INVALID_FREAD;									\
 	}
@@ -83,7 +93,7 @@
 #define FILE_PTR_CHECK(file_ptr)                                    \
     if(file_ptr == NULL)                                            \
     {                                                               \
-        CPU_LOG("\nERROR: Unable to open "#file_ptr"\n");           \
+        LOG("\nERROR: Unable to open "#file_ptr"\n");           \
         return SPU_UNABLE_TO_OPEN_FILE;								\
 	}
 

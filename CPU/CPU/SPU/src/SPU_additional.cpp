@@ -19,7 +19,8 @@
  * @param buf Pointer to the buffer.
  * @param size Size of the buffer.
  */
-#define LOG_BUFFER(buf, size) print_binary(buf, size, #buf)
+#define LOG_BUFFER(buf, size)\
+	print_binary(buf, size, #buf, spu_write_log)
 
 /**
  * @def UPDATE_BYTE_CODE_CARRIAGE
@@ -52,13 +53,9 @@
 #define ALLOCATION_CHECK(ptr)					\
 	if(ptr == NULL)								\
 	{											\
-		CPU_LOG("Unable to allocate"#ptr".\n");	\
+		LOG("Unable to allocate"#ptr".\n");	\
 		return SPU_UNABLE_TO_ALLOCATE;			\
 	}
-
-#define CALLOC(ptr, amount, type)				\
-	ptr = (type *)calloc(amount, sizeof(type));	\
-	ALLOCATION_CHECK(ptr);
 
 spu_err_t process(FILE *bin_file, const char *config_file,
 				FILE *output_file, void (*driver)(VM *, char *, FILE *))
@@ -138,14 +135,14 @@ spu_err_t VM_ctor(struct VM *vm, const char *config_file)
 			sscanf(settings.tokens[set_ID], "%*[^:]%*2c%lu", &regs_amount);
 			vm->regs_amount = regs_amount;
 
-			CPU_LOG("regs amount = %lu\n", regs_amount);
+			LOG("regs amount = %lu\n", regs_amount);
 		}
 		else if(IS_SETTING("RAM_size:"))
 		{
 			sscanf(settings.tokens[set_ID], "%*[^:]%*2c%lu", &RAM_size);
 			vm->rand_access_mem.RAM_size = RAM_size;
 
-			CPU_LOG("ram size = %lu\n", RAM_size);
+			LOG("ram size = %lu\n", RAM_size);
 		}
 	}
 
@@ -173,6 +170,27 @@ spu_err_t VM_dtor(struct VM *vm)
 
 #undef UPDATE_BYTE_CODE_CARRIAGE
 #undef MOVE_CARRIAGE
+
+void spu_write_log(const char *file_name, const char *func_name, int line, const char *fmt, ...)
+{
+
+    static FILE *log_file = fopen("SPU_log.txt", "w");
+
+    if (log_file == NULL)
+	{
+        perror("Error opening log_file");
+        return;
+    }
+
+    va_list args = NULL;
+
+    va_start(args, fmt);
+
+	// fprintf(log_file, "file: %s func: %s on line : %d\n", file_name, func_name, line);
+    vfprintf(log_file, fmt, args);
+
+    va_end(args);
+}
 
 #ifdef CPU_DEBUG
 

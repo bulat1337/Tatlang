@@ -12,6 +12,10 @@ char *create_file_name(const char *name, const char *postfix)
 
 	char *byte_code_file_name =
 		(char *)calloc(byte_code_file_name_size, sizeof(char));
+	if(byte_code_file_name == NULL)
+	{
+		return NULL;
+	}
 
 	snprintf(byte_code_file_name, byte_code_file_name_size, "%s%s", name, postfix);
 

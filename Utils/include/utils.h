@@ -18,7 +18,11 @@
 
 #define FREAD(buf, elem_size, amount, file_ptr)								\
 	size_t read_elems = fread(buf, elem_size, amount, file_ptr);			\
-	FREAD_CHECK(read_elems, amount);										\
+	FREAD_CHECK(read_elems, amount);
+
+#define FWRITE(buf, elem_size, amount, file_ptr)						\
+	size_t written_elems = fwrite(buf, elem_size, amount, file_ptr);	\
+	FWRITE_CHECK(written_elems, amount);								\
 
 /**
  * @brief Macro to start a loop with safety check.
@@ -37,7 +41,7 @@
  * If the limit is reached, it prints an error message and breaks the loop.
  * Usage: FOR { ... FOR_END }
  */
-#define FOR_END																		\
+#define FOR_END																			\
 	GLOBAL_CYCLE_COUNTER++;																\
 	if(GLOBAL_CYCLE_COUNTER >= CYCLE_LIMIT)												\
 	{																					\

@@ -104,7 +104,7 @@ enum Err_ID stack_push( Stack *stk, elem_t value
 					  )
 {
 	#ifdef LOGGING
-		LOG(stk);
+		LOG_FUNC(stk);
 	#endif
 
 	#ifdef HASH_PROTECTION
@@ -170,7 +170,7 @@ struct Stack_pop_result stack_pop(  Stack *stk
 								 )
 {
 	#ifdef LOGGING
-		LOG(stk);
+		LOG_FUNC(stk);
 	#endif
 
 	#ifdef HASH_PROTECTION
@@ -240,7 +240,7 @@ struct Stack_pop_result stack_pop(  Stack *stk
 enum Err_ID stack_dtor(Stack *stk)
 {
 	#ifdef LOGGING
-		LOG(stk);
+		LOG_FUNC(stk);
 	#endif
 
 	#ifdef HASH_PROTECTION
@@ -368,7 +368,7 @@ void stack_hash_count(Stack *stk)
 enum Err_ID hash_check_n_count(Stack *stk)
 {
 	#ifdef LOGGING
-		LOG(stk);
+		LOG_FUNC(stk);
 	#endif
 
 	enum Err_ID error_code = ALL_GOOD;

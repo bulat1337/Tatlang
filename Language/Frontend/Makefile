@@ -1,10 +1,30 @@
-PATH_FRD_OBJ    = ../../obj/frontend_obj/
-PATH_FRD        = ./src/
+PATH_FRD_OBJ = ../../obj/frontend_obj/
+PATH_FRD_SRC = ./src/
+FRD_SRC = $(wildcard $(PATH_FRD_SRC)*.cpp)
+FRD_OBJ = $(patsubst $(PATH_FRD_SRC)%.cpp, $(PATH_FRD_OBJ)%.o, $(FRD_SRC))
 
-FRD_SRC = $(wildcard $(PATH_FRD)*.cpp)
-FRD_OBJ = $(patsubst $(PATH_FRD)%.cpp, $(PATH_FRD_OBJ)%.o, $(FRD_SRC))
+PATH_B_TREE_OBJ = ../../obj/b_tree_obj/
+PATH_B_TREE_SRC = ../../B_tree/src/
+B_TREE_SRC = $(wildcard $(PATH_B_TREE_SRC)*.cpp)
+B_TREE_OBJ = $(patsubst $(PATH_B_TREE_SRC)%.cpp, $(PATH_B_TREE_OBJ)%.o, $(B_TREE_SRC))
 
-FRD_TARGET = ../../executables/frontend.out
+PATH_R_PARSE_OBJ = ../../obj/recursive_parser_obj/
+PATH_R_PARSE_SRC = ../../Recursive_parser/src/
+R_PARSE_SRC = $(wildcard $(PATH_R_PARSE_SRC)*.cpp)
+R_PARSE_OBJ = $(patsubst $(PATH_R_PARSE_SRC)%.cpp, $(PATH_R_PARSE_OBJ)%.o, $(R_PARSE_SRC))
+
+PATH_PARSE_OBJ = ../../obj/file_parser_obj/
+PATH_PARSE_SRC = ../../File_parser/src/
+PARSE_SRC = $(wildcard $(PATH_PARSE_SRC)*.cpp)
+PARSE_OBJ = $(patsubst $(PATH_PARSE_SRC)%.cpp, $(PATH_PARSE_OBJ)%.o, $(PARSE_SRC))
+
+PATH_UTILS_OBJ = ../../obj/utils_obj/
+PATH_UTILS_SRC = ../../Utils/src/
+UTILS_SRC = $(wildcard $(PATH_UTILS_SRC)*.cpp)
+UTILS_OBJ = $(patsubst $(PATH_UTILS_SRC)%.cpp, $(PATH_UTILS_OBJ)%.o, $(UTILS_SRC))
+
+
+PATH_LIB = ../../libs/
 
 CC = g++
 
@@ -24,13 +44,13 @@ FLAGS = -D _DEBUG -ggdb3 \
 
 LINK_FLAGS = -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-Include = -I./include/ -I../../B_tree/include/ -I../../Recursive_parser/include/ -I../../Utils/include/ -I../../File_parser/include/
+Include =  -I./include/ -I../../B_tree/include/ -I../../Recursive_parser/include/ -I../../Utils/include/ -I../../File_parser/include/
 
-$(FRD_TARGET): $(FRD_OBJ)
-	@ $(CC) $(LINK_FLAGS) $^ -o $@ -L../../libs -lutils -lb_tree -lrecursive_parser -lfile_parser
+$(PATH_LIB)libfrontend.a: $(FRD_OBJ)
+	@ ar rvs $@ $(FRD_OBJ) $(B_TREE_OBJ) $(R_PARSE_OBJ) $(PARSE_OBJ) $(UTILS_OBJ)
 
-$(PATH_FRD_OBJ)%.o: $(PATH_FRD)%.cpp
+$(PATH_FRD_OBJ)%.o: $(PATH_FRD_SRC)%.cpp
 	@ $(CC) -c $< -o $@ $(FLAGS) $(Include)
 
 clean:
-	@rm $(FRD_TARGET) $(PATH_FRD_OBJ)*.o
+	@rm $(PATH_FRD_OBJ)*.o

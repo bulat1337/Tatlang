@@ -43,7 +43,7 @@ FLAGS = -D _DEBUG -ggdb3 \
 
 LINK_FLAGS = -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-Include = -I./include/ -I../../Global/include/ -I../../Stack/include/ -I../../../File_parser/include/ -I../../Drivers/include/ -I/opt/homebrew/Cellar/sfml/2.6.1/include/
+Include = -I./include/ -I../../../Utils/include/ -I../../Global/include/ -I../../Stack/include/ -I../../../File_parser/include/ -I../../Drivers/include/ -I/opt/homebrew/Cellar/sfml/2.6.1/include/
 
 $(PATH_LIB)libSPU.a: $(SPU_OBJ)
 	@ ar rvs $@ $(SPU_OBJ) $(GLOBAL_OBJ) $(STACK_OBJ) $(PARSE_OBJ) $(DRIVERS_OBJ)

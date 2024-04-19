@@ -1,8 +1,7 @@
-PATH_PARSE_OBJ = ../obj/file_parser_obj/
-PATH_PARSE     = ./src/
-
-PARSE_SRC = $(wildcard $(PATH_PARSE)*.cpp)
-PARSE_OBJ = $(patsubst $(PATH_PARSE)%.cpp, $(PATH_PARSE_OBJ)%.o, $(PARSE_SRC))
+PATH_PARSE_OBJ     = ../obj/file_parser_obj/
+PATH_PARSE_SRC     = ./src/
+PARSE_SRC = $(wildcard $(PATH_PARSE_SRC)*.cpp)
+PARSE_OBJ = $(patsubst $(PATH_PARSE_SRC)%.cpp, $(PATH_PARSE_OBJ)%.o, $(PARSE_SRC))
 
 PATH_LIB = ../libs/
 
@@ -29,7 +28,7 @@ Include = -I./include/
 $(PATH_LIB)libfile_parser.a: $(PARSE_OBJ)
 	@ ar rvs $@ $(PARSE_OBJ)
 
-$(PATH_PARSE_OBJ)%.o: $(PATH_PARSE)%.cpp
+$(PATH_PARSE_OBJ)%.o: $(PATH_PARSE_SRC)%.cpp
 	@ $(CC) -c $< -o $@ $(FLAGS) $(Include)
 
 clean:

@@ -14,16 +14,16 @@ typedef double btr_elem_t;
 
 typedef enum
 {
-	ALL_GOOD 		         = 0,
-	UNABLE_TO_OPEN_FILE      = 1 << 0,
-	UNABLE_TO_ALLOCATE       = 1 << 1,
-	UNEXPECTED_WRITTEN_ELEMS = 1 << 3,
-	B_TREE_NULL_PTR          = 1 << 4,
-	B_TREE_NODE_NULL_PTR     = 1 << 5,
-	INVALID_VALUE            = 1 << 6,
-	INVALID_INDEX            = 1 << 7,
-	PARENT_NODE_IS_FREE      = 1 << 8,
-	UNKNOWN_NODE_TYPE        = 1 << 9,
+	B_TREE_ALL_GOOD 		   = 0,
+	B_TREE_UNABLE_TO_OPEN_FILE = 1 << 0,
+	UNABLE_TO_ALLOCATE         = 1 << 1,
+	UNEXPECTED_WRITTEN_ELEMS   = 1 << 3,
+	B_TREE_NULL_PTR            = 1 << 4,
+	B_TREE_NODE_NULL_PTR       = 1 << 5,
+	INVALID_VALUE              = 1 << 6,
+	INVALID_INDEX              = 1 << 7,
+	PARENT_NODE_IS_FREE        = 1 << 8,
+	UNKNOWN_NODE_TYPE          = 1 << 9,
 } error_t;
 
 

@@ -32,7 +32,7 @@ error_t deallocate_node_memory(struct B_tree_node *node)
 	free(node);
 	node = NULL;
 
-	return ALL_GOOD;
+	return B_TREE_ALL_GOOD;
 }
 
 error_t print_regular_nodes(struct B_tree_node *node,
@@ -41,7 +41,7 @@ error_t print_regular_nodes(struct B_tree_node *node,
 {
 	if(node == NULL)
 	{
-		return ALL_GOOD;
+		return B_TREE_ALL_GOOD;
 	}
 
 	//fill_node_label
@@ -180,7 +180,7 @@ error_t print_regular_nodes(struct B_tree_node *node,
 						nd_description,
 						graphic_dump_code_file_ptr);
 
-	return ALL_GOOD;
+	return B_TREE_ALL_GOOD;
 }
 
 void gr_dump_connect_nodes(struct B_tree_node *node, FILE *graphic_dump_code_file_ptr)
@@ -252,7 +252,7 @@ error_t gr_dump_node(struct B_tree_node *node, struct Node_charachteristics *nd_
 			"fillcolor = \"%s\", label = \"%s\" ];\n",
 			(unsigned long)node, nd_description->color, nd_description->label);
 
-	return ALL_GOOD;
+	return B_TREE_ALL_GOOD;
 }
 
 void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
@@ -390,5 +390,5 @@ error_t compile_dot(const char *b_tree_name)
 
 	free(gr_dump_gen_cmd);
 
-	return ALL_GOOD;
+	return B_TREE_ALL_GOOD;
 }

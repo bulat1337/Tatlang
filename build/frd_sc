@@ -1,3 +1,0 @@
-make clean
-make frd
-../executables/frontend.out code.tat

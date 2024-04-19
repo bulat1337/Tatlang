@@ -6,10 +6,6 @@
 #define HASH_PROTECTION
 #define LOGGING
 
-#ifdef LOGGING
-	#define LOG(stk) fprintf((stk)->log_file ,"\n%s LOG:\n", __func__)
-#endif
-
 #ifdef DEBUG
 	#define STACK_DUMP(stk, error_code) stack_dump(stk, #stk, error_code);
 #endif

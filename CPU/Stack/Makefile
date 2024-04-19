@@ -23,7 +23,7 @@ FLAGS = -D _DEBUG -ggdb3 \
 
 LINK_FLAGS = -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-Include = -I./include/ -I../Global/include/
+Include = -I./include/ -I../Global/include/ -I../../Utils/include/
 
 $(PATH_LIB)libstack.a: $(STK_OBJ)
 	@ ar rvs $@ $(STK_OBJ)

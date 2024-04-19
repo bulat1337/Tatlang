@@ -12,35 +12,23 @@
 #define ALLOCATION_CHECK(ptr)\
 	if(ptr == NULL)\
 	{\
-		CPU_LOG("Unable to allocate"#ptr".\n");	\
+		LOG("Unable to allocate"#ptr".\n");	\
 		return ASM_UNABLE_TO_ALLOCATE;			\
-	}
-
-#define CALLOC(ptr, amount, type)				\
-	ptr = (type *)calloc(amount, sizeof(type));	\
-	ALLOCATION_CHECK(ptr);
-
-#define REALLOC(ptr, amount, type)					\
-	ptr = (type *)realloc(ptr, amount);				\
-	if(ptr == NULL)									\
-	{												\
-		CPU_LOG("Unable to reallocate"#ptr".\n");	\
-		return ASM_UNABLE_TO_ALLOCATE;				\
 	}
 
 /**
  * @def LOG_BUFFER
  * @brief Macro to log buffer contents.
  *
- * This macro logs the contents of a buffer using the CPU_LOG macro. It prints the buffer
+ * This macro logs the contents of a buffer using the LOG macro. It prints the buffer
  * contents along with the function name where the log is called.
  *
  * @param buf Pointer to the buffer.
  * @param size Size of the buffer.
  */
 #define LOG_BUFFER(buf, size)\
-    CPU_LOG("\nBuffer log from %s:\n", __func__);\
-    print_binary(buf, size, #buf)
+    LOG("\nBuffer log from %s:\n", __func__);\
+    print_binary(buf, size, #buf, asm_write_log)
 
 /**
  * @def CURRENT_JMP_PTR
@@ -68,7 +56,7 @@
 #define FILE_PTR_CHECK(file_ptr)                                    \
     if(file_ptr == NULL)                                            \
     {                                                               \
-        CPU_LOG("\nERROR: Unable to open "#file_ptr"\n");           \
+        LOG("\nERROR: Unable to open "#file_ptr"\n");           \
         return ASM_UNABLE_TO_OPEN_FILE;								\
     }
 
@@ -90,7 +78,7 @@ asm_err_t parse_human_code(Compile_manager *manager, const char *file_name)
 	)
 
 	manager->strings.amount = count_file_lines(manager->human_code_buffer);
-	CPU_LOG("amount of lines: %lu\n", manager->strings.amount);
+	LOG("amount of lines: %lu\n", manager->strings.amount);
 
 	CALLOC(manager->strings.tokens, manager->strings.amount, char *);
 
@@ -331,7 +319,7 @@ asm_err_t cmds_process(Compile_manager *manager)
 	#define IS_COMMAND(cmd)\
 		!strncmp(COMMANDS[line_ID], cmd, LEN(cmd))
 
-	SAFE_FOR_START(size_t line_ID = 0; line_ID < amount_of_lines; line_ID++)
+	FOR(size_t line_ID = 0; line_ID < amount_of_lines; line_ID++)
 	{
 		if(false)
 		{
@@ -339,7 +327,7 @@ asm_err_t cmds_process(Compile_manager *manager)
 		}
 		#include "cmd_definitions.h"
 
-		SAFE_FOR_END
+		FOR_END;
 	}
 
 	LOG_BUFFER(manager->byte_code_start, BYTE_CODE.length);
@@ -382,13 +370,13 @@ asm_err_t write_to_buf(struct Buffer_w_info *byte_code,
 	asm_err_t function_error = ASM_ALL_GOOD;
 	const char *byte_of_value = (const char *)value;
 
-	SAFE_FOR_START(size_t ID = 0; ID < size; ID++)
+	FOR(size_t ID = 0; ID < size; ID++)
 	{
 		snprintf(byte_code->buf, sizeof(char) + 1, "%c", *(byte_of_value + ID));
 
 		byte_code->buf++;
 
-		SAFE_FOR_END
+		FOR_END
 	}
 
 	return function_error;
@@ -397,11 +385,11 @@ asm_err_t write_to_buf(struct Buffer_w_info *byte_code,
 asm_err_t align_buffer(struct Buffer_w_info *buf, size_t amount_of_bytes)
 {
 	char value = 0;
-	SAFE_FOR_START(size_t byte_ID = 0; byte_ID < amount_of_bytes; byte_ID++)
+	FOR(size_t byte_ID = 0; byte_ID < amount_of_bytes; byte_ID++)
 	{
 		write_to_buf(buf, &value, sizeof(char));
 
-		SAFE_FOR_END
+		FOR_END
 	}
 
 	return ASM_ALL_GOOD;
@@ -418,15 +406,15 @@ asm_err_t write_char_w_alignment(struct Buffer_w_info *byte_code,
 
 asm_err_t log_labels(struct Labels_w_carriage *labels_w_carriage)
 {
-	CPU_LOG("\nLABELS\n");
-	CPU_LOG("label_ID        IP_pos        name\n");
-	SAFE_FOR_START(size_t label_ID = 0; label_ID < labels_w_carriage->carriage; label_ID++)
+	LOG("\nLABELS\n");
+	LOG("label_ID        IP_pos        name\n");
+	FOR(size_t label_ID = 0; label_ID < labels_w_carriage->carriage; label_ID++)
 	{
-		CPU_LOG("%8.lu%14.lu        %s\n",
+		LOG("%8.lu%14.lu        %s\n",
 			label_ID, labels_w_carriage->labels[label_ID].IP_pos,
 			labels_w_carriage->labels[label_ID].name);
 
-		SAFE_FOR_END
+		FOR_END
 	}
 
 	return ASM_ALL_GOOD;
@@ -434,15 +422,15 @@ asm_err_t log_labels(struct Labels_w_carriage *labels_w_carriage)
 
 asm_err_t log_jmps(struct JMP_poses_w_carriage *jmp_poses_w_carriage)
 {
-	CPU_LOG("\nJMPS\n");
-	CPU_LOG("JMP_ID        IP_pos        name\n");
-	SAFE_FOR_START(size_t JMP_ID = 0; JMP_ID < jmp_poses_w_carriage->carriage; JMP_ID++)
+	LOG("\nJMPS\n");
+	LOG("JMP_ID        IP_pos        name\n");
+	FOR(size_t JMP_ID = 0; JMP_ID < jmp_poses_w_carriage->carriage; JMP_ID++)
 	{
-		CPU_LOG("%6.lu%14.lu        %s\n",
+		LOG("%6.lu%14.lu        %s\n",
 			JMP_ID, jmp_poses_w_carriage->JMP_poses[JMP_ID].IP_pos,
 			jmp_poses_w_carriage->JMP_poses[JMP_ID].name);
 
-		SAFE_FOR_END
+		FOR_END
 	}
 
 	return ASM_ALL_GOOD;
@@ -462,16 +450,16 @@ asm_err_t arrange_labels(Compile_manager *manager)
 
 	bool label_found = false;
 
-	SAFE_FOR_START(size_t jmp_ID = 0; jmp_ID < amount_of_jmps; jmp_ID++)
+	FOR(size_t jmp_ID = 0; jmp_ID < amount_of_jmps; jmp_ID++)
 	{
-		CPU_LOG("Working on %s...\n", CURRENT_JMP);
+		LOG("Working on %s...\n", CURRENT_JMP);
 
-		SAFE_FOR_START(size_t label_ID = 0; label_ID < amount_of_labels; label_ID++)
+		FOR(size_t label_ID = 0; label_ID < amount_of_labels; label_ID++)
 		{
-			CPU_LOG("\tIs it %s?\n", CURRENT_LABEL.name);
+			LOG("\tIs it %s?\n", CURRENT_LABEL.name);
 			if(!strncmp(CURRENT_LABEL.name, CURRENT_JMP.name, strlen(CURRENT_JMP.name)))
 			{
-				CPU_LOG("\t\tYes. Fixing...\n");
+				LOG("\t\tYes. Fixing...\n");
 
 				label_found = true;
 
@@ -495,24 +483,24 @@ asm_err_t arrange_labels(Compile_manager *manager)
 			}
 			else
 			{
-				CPU_LOG("\t\tNo\n");
+				LOG("\t\tNo\n");
 			}
 
-			SAFE_FOR_END
+			FOR_END
 		}
 
 		if(!label_found)
 		{
-			CPU_LOG("label for %s jmp doesn't exists\n", CURRENT_JMP.name);
+			LOG("label for %s jmp doesn't exists\n", CURRENT_JMP.name);
 			error_code = LABEL_DOESNT_EXIST;
 		}
 
-		SAFE_FOR_END
+		FOR_END
 	}
 
 	LOG_BUFFER(manager->byte_code_start, BYTE_CODE.length);
 
-	CPU_LOG("Byte_code size: %lu * sizeof(double) bytes\n",
+	LOG("Byte_code size: %lu * sizeof(double) bytes\n",
 			 manager->byte_code.length / sizeof(double));
 
 	manager->byte_code.buf = manager->byte_code_start;
@@ -535,7 +523,7 @@ asm_err_t reduce_buffer_size(Compile_manager *manager)
 	}
 	else
 	{
-		SAFE_FOR_START(size_t carriage = 0; carriage < BYTE_CODE.length; carriage += sizeof(long))
+		FOR(size_t carriage = 0; carriage < BYTE_CODE.length; carriage += sizeof(long))
 		{
 			if(CURRENT_CHUNK == 0)
 			{
@@ -554,7 +542,7 @@ asm_err_t reduce_buffer_size(Compile_manager *manager)
 				zero_flag = false;
 			}
 
-			SAFE_FOR_END
+			FOR_END
 		}
 	}
 
@@ -565,27 +553,10 @@ asm_err_t reduce_buffer_size(Compile_manager *manager)
 	manager->byte_code_start = BYTE_CODE.buf;
 
 	LOG_BUFFER(BYTE_CODE.buf, BYTE_CODE.length);
-	CPU_LOG("reduced length: %lu * sizeof(double) bytes\n",
+	LOG("reduced length: %lu * sizeof(double) bytes\n",
 			BYTE_CODE.length / sizeof(double));
 
 	return ASM_ALL_GOOD;
-}
-
-char *create_file_name(const char *name, const char *postfix)
-{
-	size_t byte_code_file_name_size =
-		strlen(postfix) + strlen(name) + ADDITIONAL_CONCATENATION_SPACE;
-
-	char *byte_code_file_name =
-		(char *)calloc(byte_code_file_name_size, sizeof(char));
-	if(byte_code_file_name == NULL)
-	{
-		return NULL;
-	}
-
-	snprintf(byte_code_file_name, byte_code_file_name_size, "%s%s", name, postfix);
-
-	return byte_code_file_name;
 }
 
 asm_err_t create_bin(Compile_manager *manager, const char *file_name)
@@ -663,6 +634,27 @@ asm_err_t init_manager(Compile_manager *manager)
 size_t get_ip_pos(Compile_manager *manager)
 {
 	return (size_t)(BYTE_CODE.buf - manager->byte_code_start) / sizeof(double);
+}
+
+void asm_write_log(const char *file_name, const char *func_name, int line, const char *fmt, ...)
+{
+
+    static FILE *log_file = fopen("asm_log.txt", "w");
+
+    if (log_file == NULL)
+	{
+        perror("Error opening log_file");
+        return;
+    }
+
+    va_list args = NULL;
+
+    va_start(args, fmt);
+
+	// fprintf(log_file, "file: %s func: %s on line : %d\n", file_name, func_name, line);
+    vfprintf(log_file, fmt, args);
+
+    va_end(args);
 }
 
 #undef CURRENT_JMP

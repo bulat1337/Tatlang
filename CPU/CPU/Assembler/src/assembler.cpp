@@ -31,7 +31,7 @@
 #define FILE_PTR_CHECK(file_ptr)									\
 	if(file_ptr == NULL)											\
 	{																\
-		CPU_LOG("\nERROR: Unable to open "#file_ptr"\n");			\
+		LOG("\nERROR: Unable to open "#file_ptr"\n");			\
 		return ASM_UNABLE_TO_OPEN_FILE;								\
 	}
 

@@ -1,10 +1,41 @@
-PATH_BKD_OBJ    = ../../obj/backend_obj/
-PATH_BKD        = ./src/
+PATH_BKD_OBJ = ../../obj/backend_obj/
+PATH_BKD_SRC = ./src/
+BKD_SRC = $(wildcard $(PATH_BKD_SRC)*.cpp)
+BKD_OBJ = $(patsubst $(PATH_BKD_SRC)%.cpp, $(PATH_BKD_OBJ)%.o, $(BKD_SRC))
 
-BKD_SRC = $(wildcard $(PATH_BKD)*.cpp)
-BKD_OBJ = $(patsubst $(PATH_BKD)%.cpp, $(PATH_BKD_OBJ)%.o, $(BKD_SRC))
 
-BKD_TARGET = ../../executables/backend.out
+PATH_ASM_OBJ = ../../CPU/obj/assembler_obj/
+PATH_ASM_SRC = ../../CPU/CPU/Assembler/src/
+ASM_SRC = $(wildcard $(PATH_ASM_SRC)*.cpp)
+ASM_OBJ = $(patsubst $(PATH_ASM_SRC)%.cpp, $(PATH_ASM_OBJ)%.o, $(ASM_SRC))
+
+PATH_GLOBAL_OBJ = ../../CPU/obj/global_obj/
+PATH_GLOBAL_SRC = ../../CPU/Global/src/
+GLOBAL_SRC = $(wildcard $(PATH_GLOBAL_SRC)*.cpp)
+GLOBAL_OBJ = $(patsubst $(PATH_GLOBAL_SRC)%.cpp, $(PATH_GLOBAL_OBJ)%.o, $(GLOBAL_SRC))
+
+PATH_STACK_OBJ = ../../CPU/obj/stack_obj/
+PATH_STACK_SRC = ../../CPU/Stack/src/
+STACK_SRC = $(wildcard $(PATH_STACK_SRC)*.cpp)
+STACK_OBJ = $(patsubst $(PATH_STACK_SRC)%.cpp, $(PATH_STACK_OBJ)%.o, $(STACK_SRC))
+
+PATH_PARSE_OBJ = ../../obj/file_parser_obj/
+PATH_PARSE_SRC = ../../File_parser/src/
+PARSE_SRC = $(wildcard $(PATH_PARSE_SRC)*.cpp)
+PARSE_OBJ = $(patsubst $(PATH_PARSE_SRC)%.cpp, $(PATH_PARSE_OBJ)%.o, $(PARSE_SRC))
+
+PATH_SPU_OBJ = ../../CPU/obj/SPU_obj/
+PATH_SPU_SRC = ../../CPU/CPU/SPU/src/
+SPU_SRC = $(wildcard $(PATH_SPU_SRC)*.cpp)
+SPU_OBJ = $(patsubst $(PATH_SPU_SRC)%.cpp, $(PATH_SPU_OBJ)%.o, $(SPU_SRC))
+
+PATH_DRIVERS_OBJ = ../../CPU/obj/drivers_obj/
+PATH_DRIVERS_SRC = ../../CPU/Drivers/src/
+DRIVERS_SRC = $(wildcard $(PATH_DRIVERS_SRC)*.cpp)
+DRIVERS_OBJ = $(patsubst $(PATH_DRIVERS_SRC)%.cpp, $(PATH_DRIVERS_OBJ)%.o, $(DRIVERS_SRC))
+
+
+PATH_LIB = ../../libs/
 
 CC = g++
 
@@ -26,11 +57,12 @@ LINK_FLAGS = -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,f
 
 Include = -I./include/ -I../../CPU/CPU/Assembler/include/ -I../../CPU/CPU/SPU/include/ -I../../CPU/Drivers/include/ -I../../CPU/Stack/include/
 
-$(BKD_TARGET): $(BKD_OBJ)
-	@ $(CC) $(LINK_FLAGS) $^ -o $@ -L../../libs -lSPU -lassembler -L/opt/homebrew/Cellar/sfml/2.6.1/lib/ -lsfml-graphics -lsfml-window -lsfml-system
 
-$(PATH_BKD_OBJ)%.o: $(PATH_BKD)%.cpp
+$(PATH_LIB)libbackend.a: $(BKD_OBJ)
+	@ ar rvs $@ $(BKD_OBJ) $(ASM_OBJ) $(GLOBAL_OBJ) $(STACK_OBJ) $(PARSE_OBJ) $(SPU_OBJ) $(DRIVERS_OBJ)
+
+$(PATH_BKD_OBJ)%.o: $(PATH_BKD_SRC)%.cpp
 	@ $(CC) -c $< -o $@ $(FLAGS) $(Include)
 
 clean:
-	@rm $(BKD_TARGET) $(PATH_BKD_OBJ)*.o
+	@rm $(PATH_BKD_OBJ)*.o

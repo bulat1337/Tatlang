@@ -7,28 +7,49 @@
  */
 
 #include "assembler.h"
-#include "file_parse.h"
-
+#include "../../../../File_parser/include/file_parser.h"
+#include "utils.h"
 #include "secondary.h"
 
-#define FREAD(buf, elem_size, amount, file_ptr)\
-	size_t read_elems = fread(buf, elem_size, amount, file_ptr);	\
+/**
+ * @brief Macro to log messages to a file.
+ *
+ * This macro simplifies logging by automatically passing file name, function name, and line number.
+ * Usage: LOG("Message to log");
+ */
+#define LOG(...)\
+	asm_write_log(__FILE__, __func__, __LINE__, __VA_ARGS__);
+
+/**
+ * @brief Logs a message to a file.
+ *
+ * Logs a message to a file named "log.txt" with the specified format and additional information.
+ *
+ * @param file_name The name of the file where the log message originates.
+ * @param func_name The name of the function where the log message originates.
+ * @param line The line number in the source file where the log message originates.
+ * @param fmt The format string for the log message.
+ * @param ... Additional arguments to be formatted according to the format string.
+ */
+void asm_write_log(const char *file_name, const char *func_name, int line, const char *fmt, ...);
+
+#define FREAD_CHECK(read_elems, amount)								\
 	if(read_elems != amount)										\
 	{																\
-		CPU_LOG("ERROR: fread read unexpected amount of elems.\n");	\
-		CPU_LOG("\t expected amount: %lu.\n", amount);				\
-		CPU_LOG("\t read amount: %lu.\n", read_elems);				\
+		LOG("ERROR: fread read unexpected amount of elems.\n");		\
+		LOG("\t expected amount: %lu.\n", amount);					\
+		LOG("\t read amount: %lu.\n", read_elems);					\
 																	\
 		return ASM_INVALID_FREAD;									\
 	}
 
-#define FWRITE(buf, elem_size, amount, file_ptr)\
-	size_t written_elems = fwrite(buf, elem_size, amount, file_ptr);	\
+
+#define FWRITE_CHECK(written_elems, amount)								\
 	if(written_elems != amount)											\
 	{																	\
-		CPU_LOG("ERROR: fwrite wrote unexpected amount of elems.\n");	\
-		CPU_LOG("\t expected amount: %lu.\n", amount);					\
-		CPU_LOG("\t written amount: %lu.\n", written_elems);			\
+		LOG("ERROR: fwrite wrote unexpected amount of elems.\n");		\
+		LOG("\t expected amount: %lu.\n", amount);						\
+		LOG("\t written amount: %lu.\n", written_elems);				\
 																		\
 		return ASM_INVALID_FWRITE;										\
 	}
@@ -94,7 +115,6 @@ const unsigned char LETTER_SKIP                    = 1;
 const unsigned char SIX_BYTE_ALIGNMENT             = 6;
 const unsigned char ONE_BYTE_ALIGNMENT             = 1;
 const unsigned char TWO_BYTE_ALIGNMENT             = 2;
-const unsigned char ADDITIONAL_CONCATENATION_SPACE = 2;
 const unsigned char B_CODE_SIZE_COEFF              = 2;
 
 /**
@@ -202,17 +222,6 @@ asm_err_t arrange_labels(Compile_manager *manager);
  * @return Error code indicating the status of the function.
  */
 asm_err_t reduce_buffer_size(Compile_manager *manager);
-
-/**
- * @brief Creates a file name with a specified postfix.
- *
- * This function creates a file name by concatenating the given name with the specified postfix.
- *
- * @param name Base name for the file.
- * @param postfix Postfix to be appended to the file name.
- * @return Pointer to the created file name string.
- */
-char *create_file_name(const char *name, const char *postfix);
 
 /**
  * @brief Creates a binary file containing the byte code.
