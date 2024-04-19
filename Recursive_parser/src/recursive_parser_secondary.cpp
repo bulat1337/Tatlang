@@ -3,6 +3,8 @@
 
 #include "recursive_parser_secondary.h"
 
+static size_t sce_debt = 0;
+
 #define FIRST_SYM_COND									\
 	('a' <= *(cur_str) && *(cur_str) <= 'z') ||			\
 	('A' <= *(cur_str) && *(cur_str) <= 'Z') ||			\
@@ -39,30 +41,57 @@ B_tree_node *get_scope()
 {
 	if(CUR_TYPE == OCBR)
 	{
+		size_t scope_sce_debt = sce_debt;
+		sce_debt = 0;
+
 		id++;
 		PARSE_LOG("There is scope.\n");
 		PARSE_LOG("Getting first command.\n");
 
-		B_tree_node *root = get_cmd();
+
+
+		PARSE_LOG("Getting first scope in scope.\n");
+
+		B_tree_node *root = get_scope();
 		CHECK_RET(root);
 
 		B_tree_node *cur_node = root;
-		CHECK_RET(cur_node);
 
 		while(CUR_TYPE != CCBR)
 		{
-			PARSE_LOG("Getting cmd.\n");
-			cur_node->right = get_cmd();
+			B_tree_node *scope_end = get_scope_end(cur_node);
+
+			PARSE_LOG("Getting scope in scope.\n");
+			scope_end->right = get_scope();
+
 			cur_node = cur_node->right;
 		}
+		sce_debt++;
 
 		PARSE_LOG("CCBR for scope ok.\n");
 
-		cur_node->right = create_node(SCE, {.num_value = 0}, NULL, NULL).arg.node;
-
 		id++;
 
-		root->type = SCS;
+		if(root->type == SCS)
+		{
+			root = CR_SCS(NULL, root);
+		}
+		else
+		{
+			root->type = SCS;
+		}
+
+		if(scope_sce_debt)
+		{
+			for(size_t debt_id = 0; debt_id < scope_sce_debt; debt_id++)
+			{
+				root = CR_SCE(NULL, root);
+				printf("scope paying debt.\n");
+			}
+
+			printf("sce_debt: %lu, scope_sce_debt: %lu\n", sce_debt, scope_sce_debt);
+		}
+
 		return root;
 	}
 	else
@@ -87,7 +116,27 @@ B_tree_node *get_cmd()
 		cmd = get_cond();
 		CHECK_RET(cmd);
 
-		return CR_SMC(cmd, NULL);
+		printf("cmd debt: %lu\n", sce_debt);
+		if(sce_debt)
+		{
+			B_tree_node *cmd_parent = CR_SCE(NULL, NULL);
+			B_tree_node *cur_node = cmd_parent;
+
+			for(size_t debt_id = 0; debt_id < sce_debt - 1; debt_id++)
+			{
+				cur_node->right = CR_SCE(NULL, NULL);
+				cur_node = cur_node->right;
+			}
+
+			cur_node->left = cmd;
+
+			sce_debt = 0;
+			return cmd_parent;
+		}
+		else
+		{
+			return CR_SMC(cmd, NULL);
+		}
 	}
 	else
 	{
@@ -102,7 +151,27 @@ B_tree_node *get_cmd()
 
 			id++;
 
-			return CR_SMC(cmd, NULL);
+			printf("scope debt: %lu\n", sce_debt);
+			if(sce_debt)
+			{
+				B_tree_node *cmd_parent = CR_SCE(NULL, NULL);
+				B_tree_node *cur_node = cmd_parent;
+
+				for(size_t debt_id = 0; debt_id < sce_debt - 1; debt_id++)
+				{
+					cur_node->right = CR_SCE(NULL, NULL);
+					cur_node = cur_node->right;
+				}
+
+				cur_node->left = cmd;
+
+				sce_debt = 0;
+				return cmd_parent;
+			}
+			else
+			{
+				return CR_SMC(cmd, NULL);
+			}
 		}
 		else
 		{

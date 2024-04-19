@@ -18,6 +18,9 @@ extern size_t id;
 #define CR_SMC(left_child, right_child)\
 	create_node(SMC, {.num_value = 0}, left_child, right_child).arg.node;
 
+#define CR_SCE(left_child, right_child)\
+	create_node(SCE, {.num_value = 0}, left_child, right_child).arg.node;
+
 #define CR_KWD(val, left_child, right_child)\
 	create_node(KWD, {.var_value = val}, left_child, right_child).arg.node;
 
@@ -35,9 +38,6 @@ extern size_t id;
 
 #define CR_SCS(left_child, right_child)\
 	create_node(SCS, {.num_value = 0}, left_child, right_child).arg.node;
-
-#define CR_SCE\
-	create_node(SCE, {.num_value = 0}, NULL, NULL).arg.node;
 
 #define IS_KWD(var, check_kwd)\
 	!strncmp(var, check_kwd, LEN(check_kwd))
