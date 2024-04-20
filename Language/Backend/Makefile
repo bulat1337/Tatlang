@@ -55,7 +55,7 @@ FLAGS = -D _DEBUG -ggdb3 \
 
 LINK_FLAGS = -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-Include = -I./include/ -I../../CPU/CPU/Assembler/include/ -I../../CPU/CPU/SPU/include/ -I../../CPU/Drivers/include/ -I../../CPU/Stack/include/
+Include = -I./include/ -I../../CPU/CPU/Assembler/include/ -I../../CPU/CPU/SPU/include/ -I../../CPU/Drivers/include/ -I../../CPU/Stack/include/ -I../../B_tree/include/ -I../../Utils/include/
 
 
 $(PATH_LIB)libbackend.a: $(BKD_OBJ)

@@ -268,6 +268,12 @@ B_tree_node *get_par()
 	}
 }
 
+#define OP_CASE(op, name)				\
+	else if(IS_KWD(var_name, name))		\
+	{									\
+		return CR_OP(op, NULL, child);	\
+	}									\
+
 B_tree_node *get_id()
 {
 	PARSE_LOG("%s log:\n", __func__);
@@ -283,7 +289,13 @@ B_tree_node *get_id()
 		PARSE_LOG("It's KWD.\n");
 		id++;
 
-		if(	!(IS_KWD(var_name, "while") || IS_KWD(var_name, "if")))
+		if(IS_KWD(var_name, "while") || IS_KWD(var_name, "if"))
+		{
+			PARSE_LOG("It's 'while' of 'if'.\n");
+
+			return CR_KWD(var_name, NULL, NULL);
+		}
+		else
 		{
 			if(CUR_TYPE == OBR)
 			{
@@ -298,7 +310,19 @@ B_tree_node *get_id()
 					PARSE_LOG("CBR ok\n");
 
 					id++;
-					return CR_KWD(var_name, NULL, child);
+					if(false)
+					{
+						;
+					}
+					OP_CASE(SIN, "sin")
+					OP_CASE(COS, "cos")
+					OP_CASE(LN,  "ln")
+					OP_CASE(SQRT, "sqrt")
+					else
+					{
+						REPORT_ERROR("Uknown operation.\n");
+					}
+
 				}
 				else
 				{
@@ -309,12 +333,6 @@ B_tree_node *get_id()
 			{
 				SYNTAX_ERROR;
 			}
-		}
-		else
-		{
-			PARSE_LOG("It's 'while' of 'if'.\n");
-
-			return CR_KWD(var_name, NULL, NULL);
 		}
 	}
 	else

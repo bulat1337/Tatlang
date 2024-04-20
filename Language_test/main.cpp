@@ -27,6 +27,9 @@ int main(int argc, const char *argv[])
 	GR_DUMP_CODE_GEN(root);
 
 
+//Backend
+	ASSEMBLY(root);
+
 
 
 
