@@ -1,4 +1,4 @@
-SUBDIRS = ../File_parser/ ../Utils/ ../B_tree/ ../Recursive_parser/ ../Language/Frontend/ ../CPU/build/ ../Language/Backend/ ../Language_test/
+SUBDIRS = ../File_parser/ ../Utils/ ../B_tree/ ../Recursive_parser/ ../Language/Frontend/  ../Language/Midend/ ../CPU/build/ ../Language/Backend/ ../Language_test/
 
 TXT_JUNK = $(wildcard *.txt)
 PNG_JUNK = $(wildcard *.png)

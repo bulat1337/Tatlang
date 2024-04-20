@@ -392,3 +392,14 @@ error_t compile_dot(const char *b_tree_name)
 
 	return B_TREE_ALL_GOOD;
 }
+
+bool exists(const char *file_name)
+{
+    FILE *file = NULL;
+    if ((file = fopen(file_name, "r")))
+    {
+        fclose(file);
+        return true;
+    }
+    return false;
+}

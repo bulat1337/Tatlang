@@ -73,6 +73,8 @@ B_tree_node *get_cmd()
 {
 	B_tree_node *cmd = NULL;
 
+	size_t cmds_sce_debt = get_debt();
+
 	if(CUR_TYPE == KWD)
 	{
 		PARSE_LOG("It's KWD there, getting condition action.\n");
@@ -80,10 +82,9 @@ B_tree_node *get_cmd()
 		cmd = get_cond();
 		CHECK_RET(cmd);
 
-		printf("cmd debt: %lu\n", sce_debt);
-		if(sce_debt)
+		if(cmds_sce_debt)
 		{
-			B_tree_node *cmd_parent = pay_debt_cmd(cmd);
+			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
 
 			return cmd_parent;
 		}
@@ -105,10 +106,9 @@ B_tree_node *get_cmd()
 			PARSE_LOG("SMC ok.\n");
 
 
-			printf("cmd debt: %lu\n", sce_debt);
-			if(sce_debt)
+			if(cmds_sce_debt)
 			{
-				B_tree_node *cmd_parent = pay_debt_cmd(cmd);
+				B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
 
 				return cmd_parent;
 			}
@@ -147,38 +147,9 @@ B_tree_node *get_cond()
 			PARSE_LOG("CBR ok\n");
 			id++;
 
-			if(CUR_TYPE == OCBR)
-			{
-				PARSE_LOG("OCBR detected.\n");
-				id++;
+			B_tree_node *scope = get_scope();
 
-				PARSE_LOG("Getting first command in cond scope.\n");
-
-				B_tree_node *root = get_cmd();
-
-				B_tree_node *cur_node = root;
-
-				while(CUR_TYPE != CCBR)
-				{
-					PARSE_LOG("Getting command in cond scope.\n");
-					cur_node->right = get_cmd();
-					CHECK_RET(cur_node->right);
-					cur_node = cur_node->right;
-				}
-
-				PARSE_LOG("CCBR detected.\n");
-				id++;
-
-				return CR_KWD(kwd->value.var_value, br_expr, root);
-			}
-			else
-			{
-				PARSE_LOG("Getting command for cond scope.\n");
-				B_tree_node *cmd = get_cmd();
-				CHECK_RET(cmd);
-
-				return CR_KWD(kwd->value.var_value, br_expr, cmd);
-			}
+			return CR_KWD(kwd->value.var_value, br_expr, scope);
 		}
 		else
 		{
@@ -386,8 +357,6 @@ B_tree_node *get_scope_end(B_tree_node *root)
 		root = root->right;
 	}
 
-	printf("get_scope_end moved %lu times.\n", ct);
-
 	return root;
 }
 
@@ -451,18 +420,15 @@ B_tree_node *pay_debt_scope(B_tree_node *root, size_t scopes_sce_debt)
 	return root;
 }
 
-B_tree_node *pay_debt_cmd(B_tree_node *cmd)
+B_tree_node *pay_debt_cmd(B_tree_node *cmd, size_t cmds_sce_debt)
 {
 	B_tree_node *cmd_parent = CR_SCE(NULL, NULL);
 	B_tree_node *cur_node = cmd_parent;
-	sce_debt--;
 
-	while(sce_debt)
+	for(size_t debt_id = 0; debt_id < cmds_sce_debt - 1; debt_id++)
 	{
 		cur_node->right = CR_SCE(NULL, NULL);
 		cur_node = cur_node->right;
-
-		sce_debt--;
 	}
 
 	cur_node->left = cmd;

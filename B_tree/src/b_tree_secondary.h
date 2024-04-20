@@ -25,10 +25,11 @@ error_t      dump_node             (B_tree_node *node,
 error_t      gr_dump_node          (B_tree_node *node,
 									Node_charachteristics *nd_description,
 					                FILE *graphic_dump_code_file_ptr);
-									
+
 error_t      compile_dot           (const char *b_tree_name);
 
 char        *get_operation_token   (enum Ops op_type);
 
+bool         exists                (const char *file_name);
 
 #endif

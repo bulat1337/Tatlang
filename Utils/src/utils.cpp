@@ -44,3 +44,14 @@ int cmp_double(double first_double, double second_double)
     }
 }
 
+size_t max_len(size_t len_1, size_t len_2)
+{
+	if(len_1 >= len_2)
+	{
+		return len_1;
+	}
+	else
+	{
+		return len_2;
+	}
+}

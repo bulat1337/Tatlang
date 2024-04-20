@@ -68,6 +68,6 @@ char * create_file_name(const char *name, const char *postfix);
 
 int    cmp_double      (double first_double, double second_double);
 
-// void   write_log       (const char *file_name, const char *fmt, ...);
+size_t max_len         (size_t len_1, size_t len_2);
 
 #endif

@@ -129,7 +129,8 @@ B_tree_node *manage_scs          (B_tree_node *root);
 
 B_tree_node *pay_debt_scope      (B_tree_node *root, size_t scopes_sce_debt);
 
-B_tree_node *pay_debt_cmd        (B_tree_node *cmd);
+B_tree_node *pay_debt_cmd        (B_tree_node *cmd, size_t cmds_sce_debt);
+
 
 
 #endif
