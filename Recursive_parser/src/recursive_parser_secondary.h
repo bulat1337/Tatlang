@@ -119,7 +119,17 @@ B_tree_node *get_pow             ();
 
 B_tree_node *get_scope           ();
 
-B_tree_node *get_scope_end           (B_tree_node *root);
+B_tree_node *get_scope_end       (B_tree_node *root);
+
+size_t       get_debt            ();
+
+B_tree_node *get_all_scopes      (bool manage_ccbrs, Node_type end_type);
+
+B_tree_node *manage_scs          (B_tree_node *root);
+
+B_tree_node *pay_debt_scope      (B_tree_node *root, size_t scopes_sce_debt);
+
+B_tree_node *pay_debt_cmd        (B_tree_node *cmd);
 
 
 #endif

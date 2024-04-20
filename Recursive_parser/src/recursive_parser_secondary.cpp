@@ -41,55 +41,19 @@ B_tree_node *get_scope()
 {
 	if(CUR_TYPE == OCBR)
 	{
-		size_t scope_sce_debt = sce_debt;
-		sce_debt = 0;
-
 		id++;
+
+		size_t scopes_sce_debt = get_debt();
+
 		PARSE_LOG("There is scope.\n");
-		PARSE_LOG("Getting first command.\n");
 
+		B_tree_node *root = get_all_scopes(true, CCBR);
 
+		root = manage_scs(root);
 
-		PARSE_LOG("Getting first scope in scope.\n");
-
-		B_tree_node *root = get_scope();
-		CHECK_RET(root);
-
-		B_tree_node *cur_node = root;
-
-		while(CUR_TYPE != CCBR)
+		if(scopes_sce_debt)
 		{
-			B_tree_node *scope_end = get_scope_end(cur_node);
-
-			PARSE_LOG("Getting scope in scope.\n");
-			scope_end->right = get_scope();
-
-			cur_node = cur_node->right;
-		}
-		sce_debt++;
-
-		PARSE_LOG("CCBR for scope ok.\n");
-
-		id++;
-
-		if(root->type == SCS)
-		{
-			root = CR_SCS(NULL, root);
-		}
-		else
-		{
-			root->type = SCS;
-		}
-
-		if(scope_sce_debt)
-		{
-			for(size_t debt_id = 0; debt_id < scope_sce_debt; debt_id++)
-			{
-				root = CR_SCE(NULL, root);
-				printf("scope paying debt.\n");
-			}
-
-			printf("sce_debt: %lu, scope_sce_debt: %lu\n", sce_debt, scope_sce_debt);
+			root = pay_debt_scope(root, scopes_sce_debt);
 		}
 
 		return root;
@@ -119,18 +83,8 @@ B_tree_node *get_cmd()
 		printf("cmd debt: %lu\n", sce_debt);
 		if(sce_debt)
 		{
-			B_tree_node *cmd_parent = CR_SCE(NULL, NULL);
-			B_tree_node *cur_node = cmd_parent;
+			B_tree_node *cmd_parent = pay_debt_cmd(cmd);
 
-			for(size_t debt_id = 0; debt_id < sce_debt - 1; debt_id++)
-			{
-				cur_node->right = CR_SCE(NULL, NULL);
-				cur_node = cur_node->right;
-			}
-
-			cur_node->left = cmd;
-
-			sce_debt = 0;
 			return cmd_parent;
 		}
 		else
@@ -147,25 +101,15 @@ B_tree_node *get_cmd()
 
 		if(CUR_TYPE == SMC)
 		{
+			id++;
 			PARSE_LOG("SMC ok.\n");
 
-			id++;
 
-			printf("scope debt: %lu\n", sce_debt);
+			printf("cmd debt: %lu\n", sce_debt);
 			if(sce_debt)
 			{
-				B_tree_node *cmd_parent = CR_SCE(NULL, NULL);
-				B_tree_node *cur_node = cmd_parent;
+				B_tree_node *cmd_parent = pay_debt_cmd(cmd);
 
-				for(size_t debt_id = 0; debt_id < sce_debt - 1; debt_id++)
-				{
-					cur_node->right = CR_SCE(NULL, NULL);
-					cur_node = cur_node->right;
-				}
-
-				cur_node->left = cmd;
-
-				sce_debt = 0;
 				return cmd_parent;
 			}
 			else
@@ -431,16 +375,99 @@ B_tree_node *get_pow()
 
 B_tree_node *get_scope_end(B_tree_node *root)
 {
+	size_t ct = 0;
 	if(root == NULL)
 	{
 		return root;
 	}
 	while(root->right != NULL)
 	{
+		ct++;
 		root = root->right;
 	}
 
+	printf("get_scope_end moved %lu times.\n", ct);
+
 	return root;
+}
+
+size_t get_debt()
+{
+	size_t scopes_sce_debt = sce_debt;
+	sce_debt = 0;
+
+	return scopes_sce_debt;
+}
+
+B_tree_node *get_all_scopes(bool manage_ccbrs, Node_type end_type)
+{
+	PARSE_LOG("Getting all scopes.\n");
+
+	B_tree_node *root = get_scope();
+	CHECK_RET(root);
+
+	B_tree_node *cur_node = root;
+
+	while(CUR_TYPE != end_type)
+	{
+		B_tree_node *scope_end = get_scope_end(cur_node);
+		scope_end->right = get_scope();
+
+		cur_node = scope_end->right;
+	}
+
+	if(manage_ccbrs)
+	{
+		sce_debt++;
+		PARSE_LOG("CCBR for scope ok.\n");
+		id++;
+	}
+
+	return root;
+}
+
+B_tree_node *manage_scs(B_tree_node *root)
+{
+	if(root->type == SCS)
+	{
+		root = CR_SCS(NULL, root);
+	}
+	else
+	{
+		root->type = SCS;
+	}
+
+	return root;
+}
+
+B_tree_node *pay_debt_scope(B_tree_node *root, size_t scopes_sce_debt)
+{
+	for(size_t debt_id = 0; debt_id < scopes_sce_debt; debt_id++)
+	{
+		root = CR_SCE(NULL, root);
+		PARSE_LOG("Scope is paying debt.\n");
+	}
+
+	return root;
+}
+
+B_tree_node *pay_debt_cmd(B_tree_node *cmd)
+{
+	B_tree_node *cmd_parent = CR_SCE(NULL, NULL);
+	B_tree_node *cur_node = cmd_parent;
+	sce_debt--;
+
+	while(sce_debt)
+	{
+		cur_node->right = CR_SCE(NULL, NULL);
+		cur_node = cur_node->right;
+
+		sce_debt--;
+	}
+
+	cur_node->left = cmd;
+
+	return cmd_parent;
 }
 
 

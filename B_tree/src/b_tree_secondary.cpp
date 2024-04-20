@@ -113,7 +113,7 @@ error_t print_regular_nodes(struct B_tree_node *node,
 		}
 		case SCE:
 		{
-			nd_description->color = PURPLE;
+			nd_description->color = DARK_PURPLE;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
 					"{%p | {type: SCE | val: -} | {L: %p | R: %p}}",
