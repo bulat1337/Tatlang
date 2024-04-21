@@ -3,7 +3,7 @@
 
 #include "frontend.h"
 
-const size_t kwds_amount = 5;
+const size_t kwds_amount = 8;
 
 const char * const kwds[] =
 {
@@ -12,6 +12,9 @@ const char * const kwds[] =
 	"sin",
 	"cos",
 	"ln",
+	"sqrt",
+	"getvar",
+	"putexpr",
 };
 
 const size_t STARTER_TOKENS_AMOUNT = 5;

@@ -15,6 +15,9 @@ extern size_t id;
 #define CUR_NUM\
 	tokens->data[id].value.num_value
 
+#define CUR_VAR\
+	tokens->data[id].value.var_value
+
 #define CR_SMC(left_child, right_child)\
 	create_node(SMC, {.num_value = 0}, left_child, right_child).arg.node;
 
@@ -100,6 +103,8 @@ extern size_t id;
 void         rec_write_log       (const char *file_name, const char *fmt, ...);
 
 B_tree_node *get_cmd             ();
+
+B_tree_node *get_func            ();
 
 B_tree_node *get_cond            ();
 

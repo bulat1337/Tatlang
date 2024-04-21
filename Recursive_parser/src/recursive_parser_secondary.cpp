@@ -77,24 +77,58 @@ B_tree_node *get_cmd()
 
 	if(CUR_TYPE == KWD)
 	{
-		PARSE_LOG("It's KWD there, getting condition action.\n");
-
-		cmd = get_cond();
-		CHECK_RET(cmd);
-
-		if(cmds_sce_debt)
+		if(IS_KWD(CUR_VAR, "while") || IS_KWD(CUR_VAR, "if"))
 		{
-			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
+			PARSE_LOG("It's 'while' or 'if' there, getting condition action.\n");
 
-			return cmd_parent;
+			cmd = get_cond();
+			CHECK_RET(cmd);
+
+			if(cmds_sce_debt)
+			{
+				B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
+
+				return cmd_parent;
+			}
+			else
+			{
+				return CR_SMC(cmd, NULL);
+			}
 		}
 		else
 		{
-			return CR_SMC(cmd, NULL);
+			PARSE_LOG("It's not 'while' or 'if' there, getting function.\n");
+
+			cmd = get_func();
+			CHECK_RET(cmd);
+			printf("we out\n");
+
+			if(CUR_TYPE == SMC)
+			{
+				id++;
+				PARSE_LOG("SMC ok.\n");
+
+
+				if(cmds_sce_debt)
+				{
+					B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
+
+					return cmd_parent;
+				}
+				else
+				{
+					return CR_SMC(cmd, NULL);
+				}
+			}
+			else
+			{
+				SYNTAX_ERROR;
+			}
 		}
 	}
 	else
 	{
+		printf("Gettin ass cause type: %d\n", tokens->data[id].type);
 		PARSE_LOG("Getting assignment.\n");
 
 		cmd = get_ass();
@@ -121,6 +155,77 @@ B_tree_node *get_cmd()
 		{
 			SYNTAX_ERROR;
 		}
+	}
+}
+
+B_tree_node *get_func()
+{
+	printf("we in get func\n");
+	PARSE_LOG("Getting id.\n");
+	B_tree_node *kwd = get_id();
+	CHECK_RET(kwd);
+	printf("we got id\n");
+
+	if(IS_KWD(kwd->value.var_value, "getvar"))
+	{
+		if(CUR_TYPE == OBR)
+		{
+			PARSE_LOG("OBR ok.\n");
+			id++;
+
+			PARSE_LOG("Getting brace var.\n");
+			B_tree_node *var = get_id();
+			CHECK_RET(var);
+
+			if(CUR_TYPE == CBR)
+			{
+				PARSE_LOG("CBR ok\n");
+				id++;
+
+				return CR_KWD(kwd->value.var_value, NULL, var);
+			}
+			else
+			{
+				SYNTAX_ERROR;
+			}
+		}
+		else
+		{
+			SYNTAX_ERROR;
+		}
+	}
+	else if(IS_KWD(kwd->value.var_value, "putexpr"))
+	{
+		printf("Its putexpr.\n");
+		if(CUR_TYPE == OBR)
+		{
+			PARSE_LOG("OBR ok.\n");
+			id++;
+
+			PARSE_LOG("Getting brace expression.\n");
+			B_tree_node *br_expr = get_add();
+			CHECK_RET(br_expr);
+
+			if(CUR_TYPE == CBR)
+			{
+				PARSE_LOG("CBR ok\n");
+				id++;
+
+				return CR_KWD(kwd->value.var_value, NULL, br_expr);
+			}
+			else
+			{
+				SYNTAX_ERROR;
+			}
+		}
+		else
+		{
+			SYNTAX_ERROR;
+		}
+	}
+	else
+	{
+		SYNTAX_ERROR;
 	}
 }
 
@@ -278,7 +383,7 @@ B_tree_node *get_id()
 {
 	PARSE_LOG("%s log:\n", __func__);
 
-	char *var_name = tokens->data[id].value.var_value;
+	char *var_name = CUR_VAR;
 
 	PARSE_LOG("name: %s\n", var_name);
 
@@ -289,9 +394,12 @@ B_tree_node *get_id()
 		PARSE_LOG("It's KWD.\n");
 		id++;
 
-		if(IS_KWD(var_name, "while") || IS_KWD(var_name, "if"))
+		if(	IS_KWD(var_name, "while") ||
+			IS_KWD(var_name, "if") ||
+			IS_KWD(var_name, "getvar") ||
+			IS_KWD(var_name, "putexpr"))
 		{
-			PARSE_LOG("It's 'while' of 'if'.\n");
+			PARSE_LOG("It's cond or func.\n");
 
 			return CR_KWD(var_name, NULL, NULL);
 		}

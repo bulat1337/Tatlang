@@ -13,7 +13,7 @@
 	ALLOCATION_CHECK(ptr);
 
 #define REALLOC(ptr, new_amount, type)						\
-	ptr = (type *)realloc(ptr, new_amount * sizeof(type));	\
+	ptr = (type *)realloc(ptr, (new_amount) * sizeof(type));	\
 	ALLOCATION_CHECK(ptr);
 
 #define FREAD(buf, elem_size, amount, file_ptr)								\

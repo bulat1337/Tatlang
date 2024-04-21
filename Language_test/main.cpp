@@ -33,9 +33,9 @@ int main(int argc, const char *argv[])
 
 
 
-// 	asm_err_t asm_error = compile("prog");
-//
-// 	spu_err_t spu_error = execute("prog.bin", "config", &window_draw);
+	asm_err_t asm_error = compile("root");
+
+	spu_err_t spu_error = execute("root.bin", "config", &window_draw);
 
 	if(error != FRD_ALL_GOOD)
 	{
