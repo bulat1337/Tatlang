@@ -6,40 +6,7 @@
 #include "utils.h"
 #include "file_parser.h"
 
-#define CHECK_ERROR\
-	if(error_code != FRD_ALL_GOOD)\
-		return NULL;
-
-#define LEFT_AMOUNT\
-	(file_len - (size_t)(symbs - symbs_start))
-
-#define ALLOCATION_CHECK(ptr)								\
-	if(ptr == NULL)											\
-	{														\
-		LOG("ERROR:\n\tUnable to allocate "#ptr".\n");		\
-															\
-		error_code = FRD_UNABLE_TO_ALLOCATE;				\
-		return NULL;										\
-	}
-
-#define FILE_PTR_CHECK(ptr)								\
-	if(ptr == NULL)										\
-	{													\
-		fprintf(stderr, "Unable to open "#ptr"\n");		\
-		error_code = FRD_UNABLE_TO_OPEN_FILE;			\
-		return NULL;									\
-	}
-
-#define FREAD_CHECK(read_elems, amount)										\
-	if(read_elems != amount)												\
-	{																		\
-		LOG("ERROR: Fread read unexpected amount of elems.\n");				\
-		LOG("\t expected amount: %lu.\n", amount);							\
-		LOG("\t read amount: %lu.\n", read_elems);							\
-																			\
-		error_code = FRD_INVALID_FREAD;										\
-		return NULL;														\
-	}
+#include "def_frd_dsl.h"
 
 Tokens *tokenize(const char *file, frd_err_t error_code = FRD_ALL_GOOD)
 {
@@ -51,18 +18,21 @@ Tokens *tokenize(const char *file, frd_err_t error_code = FRD_ALL_GOOD)
 	(
 		file, "r", code,
 
-		LOG("%s is opened!\n", file);
+		LOG("%s is opened.\n", file);
 
 		size_t file_len = get_file_length(code);
 
-		LOG("file length: %lu\n", file_len);
+		LOG("File length: %lu\n", file_len);
 
 		char *symbs = {};
 		CALLOC(symbs, file_len + 1, char);
 		char *symbs_start = symbs;
 
+		LOG("symbs is allocated.\n");
+
 		FREAD(symbs, sizeof(char), file_len, code);
 		symbs[file_len] = '\0';
+		LOG("Successful fread code -> symbs.\n");
 
 		double num = 0;
 

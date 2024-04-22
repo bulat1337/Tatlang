@@ -5,24 +5,8 @@
 #include "frontend_secondary.h"
 #include "utils.h"
 
-#define CHECK_ERROR\
-	if(error_code != FRD_ALL_GOOD)\
-		return error_code;
+#include "def_scnd_dsl.h"
 
-#define FILE_PTR_CHECK(ptr)							\
-	if(ptr == NULL)									\
-	{												\
-		fprintf(stderr, "Unable to open "#ptr"\n");	\
-		return FRD_UNABLE_TO_OPEN_FILE;				\
-	}
-
-#define ALLOCATION_CHECK(ptr)								\
-	if(ptr == NULL)											\
-	{														\
-		LOG("ERROR:\n\tUnable to allocate "#ptr".\n");		\
-															\
-		return FRD_UNABLE_TO_ALLOCATE;						\
-	}
 
 void frd_write_log(const char *file_name, const char *fmt, ...)
 {
@@ -139,9 +123,11 @@ frd_err_t add_node(Tokens *tokens, Node_type type, Node_value value)
 	{
 		LOG("Token buffer reallocation. \n\tNew size: %lu\n", tokens->capacity * 2);
 
-		REALLOC(tokens->data, tokens->capacity * 2, B_tree_node);
-
 		tokens->capacity *= 2;
+
+		REALLOC(tokens->data, tokens->capacity, B_tree_node);
+
+		LOG("tokens->data reallocated successfuly.");
 	}
 
 	tokens->data[tokens->size].type  = type;

@@ -44,7 +44,7 @@ FLAGS = -D _DEBUG -ggdb3 \
 
 LINK_FLAGS = -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-Include =  -I./include/ -I../../B_tree/include/ -I../../Recursive_parser/include/ -I../../Utils/include/ -I../../File_parser/include/
+Include =  -I./include/ -I./src/dsl/ -I../../B_tree/include/ -I../../Recursive_parser/include/ -I../../Utils/include/ -I../../File_parser/include/
 
 $(PATH_LIB)libfrontend.a: $(FRD_OBJ)
 	@ ar rvs $@ $(FRD_OBJ) $(B_TREE_OBJ) $(R_PARSE_OBJ) $(PARSE_OBJ) $(UTILS_OBJ)
