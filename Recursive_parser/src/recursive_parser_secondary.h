@@ -39,6 +39,9 @@ extern size_t id;
 #define CR_OP(op, left_child, right_child)\
 	create_node(OP, {.op_value = op}, left_child, right_child).arg.node
 
+#define CR_UN_OP(op, left_child, right_child)\
+	create_node(UN_OP, {.op_value = op}, left_child, right_child).arg.node
+
 #define CR_NUM(val, left_child, right_child)\
 	create_node(NUM, {.num_value = val}, left_child, right_child).arg.node;
 
@@ -124,6 +127,8 @@ B_tree_node *get_id              ();
 B_tree_node *get_pow             ();
 
 B_tree_node *get_scope           ();
+
+B_tree_node *get_unary			 ();
 
 B_tree_node *move_scope_end       (B_tree_node *root);
 

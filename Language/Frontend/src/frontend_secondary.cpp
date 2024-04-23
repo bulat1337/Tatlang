@@ -253,6 +253,24 @@ void dump_tokens(Tokens *tokens)
 				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
+			case UN_OP:
+			{
+				LOG("\tUN_OP");
+				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				break;
+			}
+			case SCS:
+			{
+				LOG("\tSCS");
+				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				break;
+			}
+			case SCE:
+			{
+				LOG("\tSCE");
+				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				break;
+			}
 			case OBR:
 			{
 				LOG("\tOBR\n");
@@ -358,8 +376,8 @@ Node_type get_type(char *token)
 	}
 	else
 	{
-		LOG("It's operation.\n");
+		LOG("It's unary operation.\n");
 
-		return KWD;
+		return UN_OP;
 	}
 }

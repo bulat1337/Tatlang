@@ -333,6 +333,13 @@ B_tree_node *get_par()
 
 		return val;
 	}
+	else if(CUR_TYPE == UN_OP)
+	{
+		B_tree_node *val = get_unary();
+		CHECK_RET(val);
+
+		return val;
+	}
 	else
 	{
 		B_tree_node *val = get_id();
@@ -342,11 +349,59 @@ B_tree_node *get_par()
 	}
 }
 
-#define OP_CASE(op, name)				\
-	else if(IS_KWD(var_name, name))		\
-	{									\
-		return CR_OP(op, NULL, child);	\
-	}									\
+#define OP_CASE(op, name)					\
+	else if(IS_KWD(op_name, name))			\
+	{										\
+		return CR_UN_OP(op, NULL, child);	\
+	}										\
+
+B_tree_node *get_unary()
+{
+	PARSE_LOG("%s log:\n", __func__);
+
+	char *op_name = CUR_VAR;
+
+	PARSE_LOG("Unary opertaion name: %s.\n", op_name);
+
+	id++;
+
+	if(CUR_TYPE == OBR)
+	{
+		PARSE_LOG("OBR ok\n");
+
+		id++;
+		B_tree_node *child = get_add();
+		CHECK_RET(child);
+
+		if(CUR_TYPE == CBR)
+		{
+			PARSE_LOG("CBR ok\n");
+
+			id++;
+			if(false)
+			{
+				;
+			}
+			OP_CASE(SIN, "sin")
+			OP_CASE(COS, "cos")
+			OP_CASE(LN,  "ln")
+			OP_CASE(SQRT, "sqrt")
+			else
+			{
+				REPORT_ERROR("Uknown operation.\n");
+			}
+
+		}
+		else
+		{
+			SYNTAX_ERROR;
+		}
+	}
+	else
+	{
+		SYNTAX_ERROR;
+	}
+}
 
 B_tree_node *get_id()
 {
@@ -354,67 +409,10 @@ B_tree_node *get_id()
 
 	char *var_name = CUR_VAR;
 
-	PARSE_LOG("name: %s\n", var_name);
+	PARSE_LOG("Variable name: %s.\n", var_name);
 
-	if(CUR_TYPE == KWD)
-	{
-		PARSE_LOG("It's KWD.\n");
-		id++;
-
-		if(	IS_KWD(var_name, "while") ||
-			IS_KWD(var_name, "if") ||
-			IS_KWD(var_name, "getvar") ||
-			IS_KWD(var_name, "putexpr"))
-		{
-			PARSE_LOG("It's cond or func.\n");
-
-			return CR_KWD(var_name, NULL, NULL);
-		}
-		else
-		{
-			if(CUR_TYPE == OBR)
-			{
-				PARSE_LOG("OBR ok\n");
-
-				id++;
-				B_tree_node *child = get_add();
-				CHECK_RET(child);
-
-				if(CUR_TYPE == CBR)
-				{
-					PARSE_LOG("CBR ok\n");
-
-					id++;
-					if(false)
-					{
-						;
-					}
-					OP_CASE(SIN, "sin")
-					OP_CASE(COS, "cos")
-					OP_CASE(LN,  "ln")
-					OP_CASE(SQRT, "sqrt")
-					else
-					{
-						REPORT_ERROR("Uknown operation.\n");
-					}
-
-				}
-				else
-				{
-					SYNTAX_ERROR;
-				}
-			}
-			else
-			{
-				SYNTAX_ERROR;
-			}
-		}
-	}
-	else
-	{
-		id++;
-		return CR_VAR(var_name, NULL, NULL);
-	}
+	id++;
+	return CR_VAR(var_name, NULL, NULL);
 }
 
 B_tree_node *get_pow()

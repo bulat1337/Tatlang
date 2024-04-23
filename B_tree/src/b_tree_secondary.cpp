@@ -75,6 +75,25 @@ error_t print_regular_nodes(struct B_tree_node *node,
 
 			break;
 		}
+		case UN_OP:
+		{
+			char *operation_token = get_operation_token(node->value.op_value);
+			if(operation_token == NULL)
+			{
+				//log_error
+				return UNABLE_TO_ALLOCATE;
+			}
+
+			nd_description->color = RASPBERRIE_PINK;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: UN_OP | val: %s} | {L: %p | R: %p}}",
+					node, operation_token, node->left, node->right);
+
+			free(operation_token);
+
+			break;
+		}
 		case VAR:
 		{
 			nd_description->color = PASTEL_GREEN;

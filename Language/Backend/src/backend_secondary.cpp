@@ -88,6 +88,12 @@ void asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 			break;
 		}
+		case UN_OP:
+		{
+			CALL(write_op(node, asm_file, nm_tbl_mngr));
+
+			break;
+		}
 		case VAR:
 		{
 			CALL(write_var(node->value.var_value, asm_file, nm_tbl_mngr));
@@ -179,6 +185,11 @@ bkd_err_t write_op(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 		CASE(SIN, "sin")
 		CASE(COS, "cos")
 		CASE(SQRT, "sqrt")
+		case DO_NOTHING:
+		{
+			LOG("%s: ERROR:\n\tInvalid operation.\n", __func__);
+			return BKD_UNKNOWN_OPERATION;
+		}
 		default:
 		{
 			LOG("%s: ERROR:\n\tUknown operation.\n", __func__);
