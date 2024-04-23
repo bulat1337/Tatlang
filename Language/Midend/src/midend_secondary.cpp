@@ -1,24 +1,26 @@
+#include <stdarg.h>
+
 #include "midend_secondary.h"
 
 extern bool change_flag;
 
-B_tree_node *simplify(B_tree_node *root)
+B_tree_node *simplify(B_tree_node *root, mid_err_t *error_code)
 {
 	if(root == NULL)
 	{
 		return root;
 	}
 
-	root->left  = simplify(root->left);
-	root->right = simplify(root->right);
+	root->left  = simplify(root->left,  error_code);
+	root->right = simplify(root->right, error_code);
 
-	root = fold_consts(root);
+	root = fold_consts(root, error_code);
 	root = solve_trivial(root);
 
 	return root;
 }
 
-B_tree_node *fold_consts(B_tree_node *node)
+B_tree_node *fold_consts(B_tree_node *node, mid_err_t *error_code)
 {
 	if(node == NULL)
 	{
@@ -32,7 +34,7 @@ B_tree_node *fold_consts(B_tree_node *node)
 
 	if(node->left->type == NUM && node->right->type == NUM)
 	{
-		btr_elem_t result = eval(node);
+		btr_elem_t result = eval(node, error_code);
 
 		change_flag = true;
 
@@ -44,10 +46,13 @@ B_tree_node *fold_consts(B_tree_node *node)
 	}
 }
 
-btr_elem_t eval(B_tree_node *node)
+btr_elem_t eval(B_tree_node *node, mid_err_t *error_code)
 {
 	if(node == NULL)
 	{
+		LOG("%s: ERROR:\n\tNULL node.\n", __func__);
+		*error_code = MID_NULL_NODE;
+
 		return NAN;
 	}
 
@@ -56,8 +61,8 @@ btr_elem_t eval(B_tree_node *node)
 		return node->value.num_value;
 	}
 
-	btr_elem_t left_node_value  = eval(node->left);
-	btr_elem_t right_node_value = eval(node->right);
+	btr_elem_t left_node_value  = eval(node->left,  error_code);
+	btr_elem_t right_node_value = eval(node->right, error_code);
 
 	switch(node->value.op_value)
 	{
@@ -80,6 +85,9 @@ btr_elem_t eval(B_tree_node *node)
 		{
 			if(cmp_double(right_node_value, 0) == 0)
 			{
+				LOG("%s: ERROR:\n\tDivision by zero.\n", __func__);
+				*error_code = MID_DIV_BY_ZERO;
+
 				return NAN;
 			}
 
@@ -109,11 +117,16 @@ btr_elem_t eval(B_tree_node *node)
 		}
 		case DO_NOTHING:
 		{
+			*error_code = MID_INVALID_OP;
+			LOG("%s: ERROR:\n\tInvaid operation.\n", __func__);
+
 			return NAN;
-			break;
 		}
 		default:
 		{
+			*error_code = MID_INVALID_OP;
+			LOG("%s: ERROR:\n\tInvaid operation.\n", __func__);
+
 			return NAN;
 		}
 
@@ -211,3 +224,22 @@ B_tree_node *solve_trivial(B_tree_node *node)
 
 #include "undef_triv_dsl.h"
 
+void mid_write_log(const char *file_name, const char *fmt, ...)
+{
+    static FILE *log_file = fopen(file_name, "w");
+
+    if (log_file == NULL)
+	{
+        perror("Error opening log_file");
+        return;
+    }
+
+    va_list args = NULL;
+
+    va_start(args, fmt);
+
+	// fprintf(log_file, "file: %s func: %s on line : %d\n", file_name, func_name, line);
+    vfprintf(log_file, fmt, args);
+
+    va_end(args);
+}

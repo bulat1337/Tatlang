@@ -4,11 +4,11 @@
 
 #include "backend_secondary.h"
 
-#define CHECK_ERROR						\
-	if(error_code != BKD_ALL_GOOD)		\
-	{									\
-		LOG("ERROR: %d\n", error_code);	\
-		return;							\
+#define CHECK_ERROR										\
+	if(error_code != BKD_ALL_GOOD)						\
+	{													\
+		LOG("%s: ERROR: %d\n", __func__, error_code);	\
+		return BKD_ALL_GOOD;							\
 	}
 
 #define IS_FUNC(kwd)\
@@ -16,13 +16,13 @@
 
 static size_t label_ct = 0;
 
-void asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
+bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 {
 	bkd_err_t error_code = BKD_ALL_GOOD;
 
 	if(node == NULL)
 	{
-		return;
+		return error_code;
 	}
 
 	switch(node->type)
@@ -54,13 +54,13 @@ void asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 		}
 		case WHILE:
 		{
-			write_while(node, asm_file, nm_tbl_mngr);
+			CALL(write_while(node, asm_file, nm_tbl_mngr));
 
 			break;
 		}
 		case IF:
 		{
-			write_if(node, asm_file, nm_tbl_mngr);
+			CALL(write_if(node, asm_file, nm_tbl_mngr));
 
 			break;
 		}
@@ -77,7 +77,8 @@ void asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 			else
 			{
 				LOG("%s: ERROR:\n\tUnknown func.\n", __func__);
-				return;
+
+				return BKD_UKNOWN_FUNC;
 			}
 
 			break;
@@ -108,29 +109,49 @@ void asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 		}
 		case KWD:
 		{
-			LOG("%s: ERROR:\n\tNo KWD allowed in the language tree.\n");
-			return;
+			LOG("%s: ERROR:\n\tNo KWD allowed in the language tree.\n", __func__);
+
+			return BKD_KWD_NODE;
 		}
 		default:
 		{
 			LOG("%s: ERROR:\n\tUnknown type: %d\n", __func__, node->type);
-			return;
+
+			return BKD_UNKNWON_TYPE;
 		}
-
 	}
+
+	return error_code;
 }
 
-void write_getvar(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
+bkd_err_t write_getvar(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 {
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
 	WRITE_ASM("in\n");
-	char *loc = get_loc(node->right->value.var_value, nm_tbl_mngr, true);
+
+	char *loc = get_loc(node->right->value.var_value, nm_tbl_mngr, true, &error_code);
+
+	if(error_code != BKD_ALL_GOOD)
+	{
+		LOG("%s: ERROR:\n\tget_loc error: %d.\n", __func__, error_code);
+
+		return error_code;
+	}
+
 	WRITE_ASM("pop %s\n", loc);
+
+	return error_code;
 }
 
-void write_putexpr(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
+bkd_err_t write_putexpr(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 {
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
 	ASMBL(node->right);
 	WRITE_ASM("out\n");
+
+	return error_code;
 }
 
 void write_num(double num, FILE *asm_file)
@@ -140,17 +161,19 @@ void write_num(double num, FILE *asm_file)
 
 bkd_err_t write_var(char *var, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 {
-	char *loc = get_loc(var, nm_tbl_mngr, false);
+	bkd_err_t error_code = BKD_ALL_GOOD;
 
-	if(loc == NULL)
+	char *loc = get_loc(var, nm_tbl_mngr, false, &error_code);
+
+	if(error_code != BKD_ALL_GOOD)
 	{
 		LOG("%s: ERROR:\n\tUnknown var.\n", __func__);
-		return BKD_UNKNOWN_VAR;
+		return error_code;
 	}
 
 	WRITE_ASM("push %s\n", loc);
 
-	return BKD_ALL_GOOD;
+	return error_code;
 }
 
 #define CASE(op, name)			\
@@ -165,12 +188,24 @@ bkd_err_t write_var(char *var, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 bkd_err_t write_op(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 {
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
 	switch(node->value.op_value)
 	{
 		case ASS:
 		{
 			ASMBL(node->right);
-			char *loc = get_loc(node->left->value.var_value, nm_tbl_mngr, true);
+
+			char *loc = get_loc(node->left->value.var_value, nm_tbl_mngr, true, &error_code);
+
+			if(error_code != BKD_ALL_GOOD)
+			{
+				LOG("%s: ERROR:\n\tget_loc error: %d.\n", __func__, error_code);
+
+				return error_code;
+			}
+
+
 			WRITE_ASM("pop %s\n", loc);
 			// WRITE_ASM("pop [temp_loc for %s]\n", node->left->value.var_value);
 
@@ -197,13 +232,15 @@ bkd_err_t write_op(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 		}
 	}
 
-	return BKD_ALL_GOOD;
+	return error_code;
 }
 
 #undef CASE
 
-void write_while(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
+bkd_err_t write_while(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 {
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
 	WRITE_ASM(":while_%lu\n", label_ct);
 	size_t while_id = label_ct;
 	label_ct++;
@@ -217,10 +254,14 @@ void write_while(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 	WRITE_ASM("jmp while_%lu\n", while_id);
 	WRITE_ASM(":break_%lu\n", while_id);
+
+	return error_code;
 }
 
-void write_if(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
+bkd_err_t write_if(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 {
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
 	ASMBL(node->left);
 
 	WRITE_ASM("push 0\n");
@@ -230,6 +271,8 @@ void write_if(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 	WRITE_ASM(":break_%lu\n", label_ct);
 	label_ct++;
+
+	return error_code;
 }
 
 
@@ -342,14 +385,15 @@ bkd_err_t dtor_name_tables(Nm_tbl_mngr *nm_tbl_mngr)
 
 #undef ALLOCATION_CHECK
 
-#define ALLOCATION_CHECK(ptr)				\
-	if(ptr == NULL)							\
-	{										\
-		LOG("Unable to allocate"#ptr".\n");	\
-		return NULL;						\
+#define ALLOCATION_CHECK(ptr)					\
+	if(ptr == NULL)								\
+	{											\
+		LOG("Unable to allocate"#ptr".\n");		\
+		*error_code = BKD_UNABLE_TO_ALLOCATE;	\
+		return NULL;							\
 	}
 
-char *get_loc(char *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag)
+char *get_loc(char *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag, bkd_err_t *error_code)
 {
 	char *loc = NULL;
 	CALLOC(loc, LOC_SIZE, char);
@@ -384,6 +428,8 @@ char *get_loc(char *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag)
 					default:
 					{
 						free(loc);
+
+						*error_code = BKD_UNKNOWN_VAR;
 						return NULL;
 					}
 				}

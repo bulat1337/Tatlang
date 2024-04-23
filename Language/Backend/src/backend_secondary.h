@@ -42,8 +42,13 @@ struct Nm_tbl_mngr
 };
 
 
-#define ASMBL(node)\
-	asmbl(node, asm_file, nm_tbl_mngr);
+#define ASMBL(node)											\
+	error_code = asmbl(node, asm_file, nm_tbl_mngr);		\
+	if(error_code != BKD_ALL_GOOD)							\
+	{														\
+		LOG("%s: ERROR:\n\tasmbl error: %d.\n", __func__);	\
+		return error_code;									\
+	}
 
 #define LOG(...)\
 	bkd_write_log("backend_log", __VA_ARGS__);
@@ -68,13 +73,13 @@ struct Nm_tbl_mngr
 
 void      write_num        (double num, FILE *asm_file);
 
-void      asmbl            (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+bkd_err_t asmbl            (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
 
 void      bkd_write_log    (const char *file_name, const char *fmt, ...);
 
-void      write_while      (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+bkd_err_t write_while      (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
 
-void      write_if         (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+bkd_err_t write_if         (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
 
 bkd_err_t write_var        (char *var, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
 
@@ -88,10 +93,11 @@ bkd_err_t downgrade_n_table(Nm_tbl_mngr *nm_tbl_mngr);
 
 bkd_err_t dtor_name_tables (Nm_tbl_mngr *nm_tbl_mngr);
 
-char     *get_loc          (char *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag);
+char     *get_loc          (char *var, Nm_tbl_mngr *nm_tbl_mngr,
+							bool init_flag, bkd_err_t *error_code);
 
-void write_getvar(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+bkd_err_t write_getvar(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
 
-void write_putexpr(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+bkd_err_t write_putexpr(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
 
 #endif

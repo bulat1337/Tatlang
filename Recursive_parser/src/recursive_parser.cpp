@@ -21,6 +21,7 @@ B_tree_node *parse_tokens(Tokens *passed_tokens)
 	}
 
 	B_tree_node *root = get_all_scopes(false, END);
+	CHECK_RET(root);
 
 	return root;
 }
