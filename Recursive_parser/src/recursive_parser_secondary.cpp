@@ -43,7 +43,7 @@ B_tree_node *get_scope()
 	{
 		id++;
 
-		size_t scopes_sce_debt = get_debt();
+		size_t scopes_sce_debt = take_debt();
 
 		PARSE_LOG("There is scope.\n");
 
@@ -73,16 +73,41 @@ B_tree_node *get_cmd()
 {
 	B_tree_node *cmd = NULL;
 
-	size_t cmds_sce_debt = get_debt();
+	size_t cmds_sce_debt = take_debt();
 
-	if(CUR_TYPE == KWD)
+	if(CUR_TYPE == IF || CUR_TYPE == WHILE)
 	{
-		if(IS_KWD(CUR_VAR, "while") || IS_KWD(CUR_VAR, "if"))
-		{
-			PARSE_LOG("It's 'while' or 'if' there, getting condition action.\n");
+		Node_type cond_type = CUR_TYPE;
+		PARSE_LOG("It's 'if' or 'while'.\n");
+		id++;
 
-			cmd = get_cond();
-			CHECK_RET(cmd);
+		cmd = get_cond(cond_type);
+		CHECK_RET(cmd);
+
+		if(cmds_sce_debt)
+		{
+			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
+
+			return cmd_parent;
+		}
+		else
+		{
+			return CR_SMC(cmd, NULL);
+		}
+	}
+	else if(CUR_TYPE == FUNC)
+	{
+		PARSE_LOG("It's function.\n");
+
+		cmd = get_func();
+		CHECK_RET(cmd);
+
+
+		if(CUR_TYPE == SMC)
+		{
+			id++;
+			PARSE_LOG("SMC ok.\n");
+
 
 			if(cmds_sce_debt)
 			{
@@ -97,38 +122,11 @@ B_tree_node *get_cmd()
 		}
 		else
 		{
-			PARSE_LOG("It's not 'while' or 'if' there, getting function.\n");
-
-			cmd = get_func();
-			CHECK_RET(cmd);
-			printf("we out\n");
-
-			if(CUR_TYPE == SMC)
-			{
-				id++;
-				PARSE_LOG("SMC ok.\n");
-
-
-				if(cmds_sce_debt)
-				{
-					B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
-
-					return cmd_parent;
-				}
-				else
-				{
-					return CR_SMC(cmd, NULL);
-				}
-			}
-			else
-			{
-				SYNTAX_ERROR;
-			}
+			SYNTAX_ERROR;
 		}
 	}
 	else
 	{
-		printf("Gettin ass cause type: %d\n", tokens->data[id].type);
 		PARSE_LOG("Getting assignment.\n");
 
 		cmd = get_ass();
@@ -160,68 +158,46 @@ B_tree_node *get_cmd()
 
 B_tree_node *get_func()
 {
-	printf("we in get func\n");
-	PARSE_LOG("Getting id.\n");
-	B_tree_node *kwd = get_id();
-	CHECK_RET(kwd);
-	printf("we got id\n");
+	char *func_id = CUR_VAR;
+	id++;
 
-	if(IS_KWD(kwd->value.var_value, "getvar"))
+	if(CUR_TYPE == OBR)
 	{
-		if(CUR_TYPE == OBR)
-		{
-			PARSE_LOG("OBR ok.\n");
-			id++;
-
-			PARSE_LOG("Getting brace var.\n");
-			B_tree_node *var = get_id();
-			CHECK_RET(var);
-
-			if(CUR_TYPE == CBR)
-			{
-				PARSE_LOG("CBR ok\n");
-				id++;
-
-				return CR_KWD(kwd->value.var_value, NULL, var);
-			}
-			else
-			{
-				SYNTAX_ERROR;
-			}
-		}
-		else
-		{
-			SYNTAX_ERROR;
-		}
+		PARSE_LOG("OBR ok.\n");
+		id++;
 	}
-	else if(IS_KWD(kwd->value.var_value, "putexpr"))
+	else
 	{
-		printf("Its putexpr.\n");
-		if(CUR_TYPE == OBR)
-		{
-			PARSE_LOG("OBR ok.\n");
-			id++;
+		SYNTAX_ERROR;
+	}
 
-			PARSE_LOG("Getting brace expression.\n");
-			B_tree_node *br_expr = get_add();
-			CHECK_RET(br_expr);
+	B_tree_node *child = NULL;
 
-			if(CUR_TYPE == CBR)
-			{
-				PARSE_LOG("CBR ok\n");
-				id++;
+	if(IS_KWD(func_id, "getvar"))
+	{
+		PARSE_LOG("Getting brace var.\n");
+		child = get_id();
+	}
+	else if(IS_KWD(func_id, "putexpr"))
+	{
+		PARSE_LOG("Getting brace expression.\n");
+		child = get_add();
+	}
+	else
+	{
+		printf("%s.\n", func_id);
+		SYNTAX_ERROR;
+	}
 
-				return CR_KWD(kwd->value.var_value, NULL, br_expr);
-			}
-			else
-			{
-				SYNTAX_ERROR;
-			}
-		}
-		else
-		{
-			SYNTAX_ERROR;
-		}
+
+	CHECK_RET(child);
+
+	if(CUR_TYPE == CBR)
+	{
+		PARSE_LOG("CBR ok\n");
+		id++;
+
+		return CR_FUNC(func_id, NULL, child);
 	}
 	else
 	{
@@ -229,15 +205,8 @@ B_tree_node *get_func()
 	}
 }
 
-B_tree_node *get_cond()
+B_tree_node *get_cond(Node_type type)
 {
-	PARSE_LOG("Getting id.\n");
-	B_tree_node *kwd = get_id();
-	CHECK_RET(kwd);
-
-	SYNTAX_CHECK(	IS_KWD(kwd->value.var_value, "while") ||
-					IS_KWD(kwd->value.var_value, "if")	);
-
 	if(CUR_TYPE == OBR)
 	{
 		PARSE_LOG("OBR ok.\n");
@@ -254,7 +223,7 @@ B_tree_node *get_cond()
 
 			B_tree_node *scope = get_scope();
 
-			return CR_KWD(kwd->value.var_value, br_expr, scope);
+			return CR_COND(type, br_expr, scope);
 		}
 		else
 		{
@@ -387,8 +356,6 @@ B_tree_node *get_id()
 
 	PARSE_LOG("name: %s\n", var_name);
 
-
-
 	if(CUR_TYPE == KWD)
 	{
 		PARSE_LOG("It's KWD.\n");
@@ -448,8 +415,6 @@ B_tree_node *get_id()
 		id++;
 		return CR_VAR(var_name, NULL, NULL);
 	}
-
-
 }
 
 B_tree_node *get_pow()
@@ -470,23 +435,21 @@ B_tree_node *get_pow()
 	return val;
 }
 
-B_tree_node *get_scope_end(B_tree_node *root)
+B_tree_node *move_scope_end(B_tree_node *root)
 {
-	size_t ct = 0;
 	if(root == NULL)
 	{
 		return root;
 	}
 	while(root->right != NULL)
 	{
-		ct++;
 		root = root->right;
 	}
 
 	return root;
 }
 
-size_t get_debt()
+size_t take_debt()
 {
 	size_t scopes_sce_debt = sce_debt;
 	sce_debt = 0;
@@ -496,7 +459,7 @@ size_t get_debt()
 
 B_tree_node *get_all_scopes(bool manage_ccbrs, Node_type end_type)
 {
-	PARSE_LOG("Getting all scopes.\n");
+	PARSE_LOG("Getting scopes.\n");
 
 	B_tree_node *root = get_scope();
 	CHECK_RET(root);
@@ -505,7 +468,7 @@ B_tree_node *get_all_scopes(bool manage_ccbrs, Node_type end_type)
 
 	while(CUR_TYPE != end_type)
 	{
-		B_tree_node *scope_end = get_scope_end(cur_node);
+		B_tree_node *scope_end = move_scope_end(cur_node);
 		scope_end->right = get_scope();
 
 		cur_node = scope_end->right;

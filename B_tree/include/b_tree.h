@@ -29,18 +29,21 @@ typedef enum
 
 enum Node_type
 {
-	NUM = 0,
-	OP  = 1,
-	VAR = 2,
-	OBR = 3,
-	CBR = 4,
-	OCBR = 5,
-	CCBR = 6,
-	SMC = 7,
-	KWD = 8,
-	END = 9,
-	SCS = 10,
-	SCE = 11,
+	NUM   = 0,
+	OP    = 1,
+	VAR   = 2,
+	OBR   = 3,
+	CBR   = 4,
+	OCBR  = 5,
+	CCBR  = 6,
+	SMC   = 7,
+	KWD   = 8,
+	END   = 9,
+	SCS   = 10,
+	SCE   = 11,
+	IF    = 12,
+	WHILE = 13,
+	FUNC  = 14,
 };
 
 enum Ops
@@ -107,6 +110,9 @@ const char * const AGRESSIVE_RED  = "#E72900";
 const char * const NEUTRAL_GREY   = "#A4A4A4";
 const char * const PURPLE         = "#B700EC";
 const char * const DARK_PURPLE    = "#7A009D";
+const char * const MUSTARD_YELLOW = "#C4B500";
+const char * const LIGHT_YELLOW   = "#FFE438";
+const char * const SKY_BLUE       = "#5AD5FF";
 
 
 

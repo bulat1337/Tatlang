@@ -93,6 +93,33 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
+		case IF:
+		{
+			nd_description->color = MUSTARD_YELLOW;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: IF | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case WHILE:
+		{
+			nd_description->color = LIGHT_YELLOW;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: WHILE | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case FUNC:
+		{
+			nd_description->color = SKY_BLUE;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: FUNC | val: %s} | {L: %p | R: %p}}",
+					node, node->value.var_value, node->left, node->right);
+			break;
+		}
 		case SMC:
 		{
 			nd_description->color = NEUTRAL_GREY;
@@ -297,6 +324,21 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 		case SMC:
 		{
 			DUMP("          SMC");
+			break;
+		}
+		case IF:
+		{
+			DUMP("          IF");
+			break;
+		}
+		case WHILE:
+		{
+			DUMP("          WHILE");
+			break;
+		}
+		case FUNC:
+		{
+			DUMP("          FUNC");
 			break;
 		}
 		case END:

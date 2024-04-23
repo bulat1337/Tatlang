@@ -1,3 +1,4 @@
 make clean
 make
 ../executables/language_test.out code.tat
+open execution_result.txt

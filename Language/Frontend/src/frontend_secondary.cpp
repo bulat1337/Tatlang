@@ -181,10 +181,11 @@ Ops get_op(char sym, frd_err_t *error_code)
 frd_err_t add_token(Tokens *tokens, char *token)
 {
 	frd_err_t error_code = FRD_ALL_GOOD;
+	Node_type type = VAR;
 
-	if(is_kwd(token))
+	if(is_kwd(token, &type))
 	{
-		CALL(add_node(tokens, KWD, {.var_value = token}));
+		CALL(add_node(tokens, type, {.var_value = token}));
 	}
 	else
 	{
@@ -195,13 +196,16 @@ frd_err_t add_token(Tokens *tokens, char *token)
 	return error_code;
 }
 
-bool is_kwd(char *token)
+bool is_kwd(char *token, Node_type *type)
 {
 	FOR(size_t kwd_id = 0; kwd_id < kwds_amount; kwd_id++)
 	{
 		if(!strncmp(token, kwds[kwd_id], strlen(token)))
 		{
 			LOG("It's KWD: %s\n", token);
+
+			*type = get_type(token);
+
 			return true;
 		}
 
@@ -243,6 +247,12 @@ void dump_tokens(Tokens *tokens)
 				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
+			case FUNC:
+			{
+				LOG("\tFUNC");
+				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				break;
+			}
 			case OBR:
 			{
 				LOG("\tOBR\n");
@@ -261,6 +271,16 @@ void dump_tokens(Tokens *tokens)
 			case CCBR:
 			{
 				LOG("\tCCBR\n");
+				break;
+			}
+			case IF:
+			{
+				LOG("\tIF\n");
+				break;
+			}
+			case WHILE:
+			{
+				LOG("\tWHILE\n");
 				break;
 			}
 			case SMC:
@@ -312,3 +332,34 @@ void log_op(Ops op)
 }
 
 #undef CASE
+
+#define IS_KWD(check_kwd)\
+	!strncmp(token, check_kwd, LEN(check_kwd))
+
+Node_type get_type(char *token)
+{
+	if(IS_KWD("putexpr") || IS_KWD("getvar"))
+	{
+		LOG("It's func.\n");
+
+		return FUNC;
+	}
+	else if(IS_KWD("while"))
+	{
+		LOG("It's while.\n");
+
+		return WHILE;
+	}
+	else if(IS_KWD("if"))
+	{
+		LOG("It's if.\n");
+
+		return IF;
+	}
+	else
+	{
+		LOG("It's operation.\n");
+
+		return KWD;
+	}
+}

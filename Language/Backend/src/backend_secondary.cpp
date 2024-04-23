@@ -4,11 +4,14 @@
 
 #include "backend_secondary.h"
 
-#define CHECK_ERROR					\
-	if(error_code != BKD_ALL_GOOD)	\
-	LOG("ERROR: %d\n", error_code);
+#define CHECK_ERROR						\
+	if(error_code != BKD_ALL_GOOD)		\
+	{									\
+		LOG("ERROR: %d\n", error_code);	\
+		return;							\
+	}
 
-#define IS_KWD(kwd)\
+#define IS_FUNC(kwd)\
 	!strncmp(node->value.var_value, kwd, LEN(kwd))
 
 static size_t label_ct = 0;
@@ -49,28 +52,34 @@ void asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 			break;
 		}
-		case KWD:
+		case WHILE:
 		{
-			if(IS_KWD("while"))
-			{
-				write_while(node, asm_file, nm_tbl_mngr);
-			}
-			else if(IS_KWD("if"))
-			{
-				write_if(node, asm_file, nm_tbl_mngr);
-			}
-			else if(IS_KWD("getvar"))
+			write_while(node, asm_file, nm_tbl_mngr);
+
+			break;
+		}
+		case IF:
+		{
+			write_if(node, asm_file, nm_tbl_mngr);
+
+			break;
+		}
+		case FUNC:
+		{
+			if(IS_FUNC("getvar"))
 			{
 				write_getvar(node, asm_file, nm_tbl_mngr);
 			}
-			else if(IS_KWD("putexpr"))
+			else if(IS_FUNC("putexpr"))
 			{
 				write_putexpr(node, asm_file, nm_tbl_mngr);
 			}
 			else
 			{
-				LOG("%s: ERROR:\n\tUnknown kwd.\n", __func__);
+				LOG("%s: ERROR:\n\tUnknown func.\n", __func__);
+				return;
 			}
+
 			break;
 		}
 		case OP:
@@ -90,6 +99,11 @@ void asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 			write_num(node->value.num_value, asm_file);
 
 			break;
+		}
+		case KWD:
+		{
+			LOG("%s: ERROR:\n\tNo KWD allowed in the language tree.\n");
+			return;
 		}
 		default:
 		{

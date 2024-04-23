@@ -24,8 +24,14 @@ extern size_t id;
 #define CR_SCE(left_child, right_child)\
 	create_node(SCE, {.num_value = 0}, left_child, right_child).arg.node;
 
+#define CR_COND(type, left_child, right_child)\
+	create_node(type, {.num_value = 0}, left_child, right_child).arg.node;
+
 #define CR_KWD(val, left_child, right_child)\
 	create_node(KWD, {.var_value = val}, left_child, right_child).arg.node;
+
+#define CR_FUNC(val, left_child, right_child)\
+	create_node(FUNC, {.var_value = val}, left_child, right_child).arg.node;
 
 #define CR_ASS(left_child, right_child)\
 	create_node(OP, {.op_value = ASS}, left_child, right_child).arg.node;
@@ -45,29 +51,24 @@ extern size_t id;
 #define IS_KWD(var, check_kwd)\
 	!strncmp(var, check_kwd, LEN(check_kwd))
 
-#define SYNTAX_CHECK(cond)												\
-	if(!(cond))															\
-	{																	\
-		printf("Syntax ERROR on %d: "#cond" is fasle\n", __LINE__);		\
-		printf("%s returning NULL\n", __func__);						\
-		return NULL;													\
+#define SYNTAX_CHECK(cond)													\
+	if(!(cond))																\
+	{																		\
+		REPORT_ERROR("Syntax ERROR on %d: "#cond" is fasle\n", __LINE__);	\
 	}
 
 #define REPORT_ERROR(...)							\
-	printf(__VA_ARGS__);							\
-	printf("%s returning NULL\n", __func__);		\
+	PARSE_LOG(__VA_ARGS__);							\
+	PARSE_LOG("%s returning NULL\n", __func__);		\
 	return NULL;
 
-#define SYNTAX_ERROR									\
-	REPORT_ERROR("syntax error on: %d\n", __LINE__)		\
-	printf("%s returning NULL\n", __func__);			\
-	return NULL;
+#define SYNTAX_ERROR								\
+	REPORT_ERROR("syntax error on: %d\n", __LINE__)
 
 #define CHECK_RET(ptr)								\
 	if(ptr == NULL)									\
 	{												\
-		printf("%s returning NULL\n", __func__);	\
-		return NULL;								\
+		REPORT_ERROR(#ptr" is NULL.\n");			\
 	}												\
 
 #define DO_IF_KWD(kwd, op)															\
@@ -106,7 +107,7 @@ B_tree_node *get_cmd             ();
 
 B_tree_node *get_func            ();
 
-B_tree_node *get_cond            ();
+B_tree_node *get_cond            (Node_type type);
 
 B_tree_node *get_ass             ();
 
@@ -124,9 +125,9 @@ B_tree_node *get_pow             ();
 
 B_tree_node *get_scope           ();
 
-B_tree_node *get_scope_end       (B_tree_node *root);
+B_tree_node *move_scope_end       (B_tree_node *root);
 
-size_t       get_debt            ();
+size_t       take_debt            ();
 
 B_tree_node *get_all_scopes      (bool manage_ccbrs, Node_type end_type);
 

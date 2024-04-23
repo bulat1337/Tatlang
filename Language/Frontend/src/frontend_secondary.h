@@ -48,10 +48,12 @@ Ops get_op(char sym, frd_err_t *error_code);
 
 frd_err_t add_token(Tokens *tokens, char *token);
 
-bool is_kwd(char *token);
+bool is_kwd(char *token, Node_type *type);
 
 void dump_tokens(Tokens *tokens);
 
 void log_op(Ops op);
+
+Node_type get_type(char *token);
 
 #endif
