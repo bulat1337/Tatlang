@@ -393,11 +393,34 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 				CASE(MUL)
 				CASE(DIV)
 				CASE(POW)
+				CASE(ASS)
+				CASE(DO_NOTHING)
+				default:
+				{
+					DUMP("UNKNOWN");
+				}
+			}
+
+			#undef CASE
+			break;
+		}
+		case UN_OP:
+		{
+			DUMP("          UN_OP");
+
+			#define CASE(OP_TYPE)\
+			case OP_TYPE:\
+			{\
+				DUMP("                "#OP_TYPE);\
+				break;\
+			}
+
+			switch(node->value.op_value)
+			{
 				CASE(LN)
 				CASE(SIN)
 				CASE(COS)
 				CASE(SQRT)
-				CASE(ASS)
 				CASE(DO_NOTHING)
 				default:
 				{
