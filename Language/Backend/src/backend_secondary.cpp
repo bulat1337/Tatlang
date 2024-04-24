@@ -111,7 +111,37 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 		{
 			LOG("%s: ERROR:\n\tNo KWD allowed in the language tree.\n", __func__);
 
-			return BKD_KWD_NODE;
+			return BKD_INVALID_NODE;
+		}
+		case OBR:
+		{
+			LOG("%s: ERROR:\n\tNo OBR allowed in the language tree.\n", __func__);
+
+			return BKD_INVALID_NODE;
+		}
+		case CBR:
+		{
+			LOG("%s: ERROR:\n\tNo CBR allowed in the language tree.\n", __func__);
+
+			return BKD_INVALID_NODE;
+		}
+		case OCBR:
+		{
+			LOG("%s: ERROR:\n\tNo OCBR allowed in the language tree.\n", __func__);
+
+			return BKD_INVALID_NODE;
+		}
+		case CCBR:
+		{
+			LOG("%s: ERROR:\n\tNo CCBR allowed in the language tree.\n", __func__);
+
+			return BKD_INVALID_NODE;
+		}
+		case END:
+		{
+			LOG("%s: ERROR:\n\tNo END allowed in the language tree.\n", __func__);
+
+			return BKD_INVALID_NODE;
 		}
 		default:
 		{
@@ -291,7 +321,6 @@ void bkd_write_log(const char *file_name, const char *fmt, ...)
 
     va_start(args, fmt);
 
-	// fprintf(log_file, "file: %s func: %s on line : %d\n", file_name, func_name, line);
     vfprintf(log_file, fmt, args);
 
     va_end(args);
@@ -446,9 +475,10 @@ char *get_loc(char *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag, bkd_err_t *er
 			LOG("Cells reallocated.\n");
 		}
 
+		CUR_TABLE.cells[CUR_TABLE.size].name            = var;
+
 		if(overall_size >= AMOUNT_OF_REGS)
 		{
-			CUR_TABLE.cells[CUR_TABLE.size].name            = var;
 			CUR_TABLE.cells[CUR_TABLE.size].type            = RAM;
 			CUR_TABLE.cells[CUR_TABLE.size].loc.RAM_address = overall_size - AMOUNT_OF_REGS;
 
@@ -457,9 +487,8 @@ char *get_loc(char *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag, bkd_err_t *er
 		}
 		else
 		{
-			CUR_TABLE.cells[CUR_TABLE.size].name       = var;
 			CUR_TABLE.cells[CUR_TABLE.size].type       = REG;
-			CUR_TABLE.cells[CUR_TABLE.size].loc.reg_id = overall_size;
+			CUR_TABLE.cells[CUR_TABLE.size].loc.reg_id = (unsigned char)overall_size;
 
 			snprintf(loc, LOC_SIZE - 1, "r%cx",
 						CUR_TABLE.cells[CUR_TABLE.size].loc.reg_id + 'a');

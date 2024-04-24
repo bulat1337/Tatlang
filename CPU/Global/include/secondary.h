@@ -16,9 +16,9 @@
 													\
 	fclose(file_ptr);
 
-const  char    RAM_MASK                  = (const char)1 << 7;
-const  char    REG_MASK                  = (const char)1 << 6;
-const  char    IMM_MASK                  = (const char)1 << 5;
+const  char    RAM_MASK                  = (const char)(1 << 7);
+const  char    REG_MASK                  = (const char)(1 << 6);
+const  char    IMM_MASK                  = (const char)(1 << 5);
 
 
 /**
@@ -31,7 +31,7 @@ const  char    IMM_MASK                  = (const char)1 << 5;
  * @param buf_name Name of the buffer for identification purposes.
  */
 void print_binary(char *buf, size_t size, const char *buf_name,
-				  void (*write_log)(const char *, const char *, int, const char *, ...));
+				  void (*write_log)(const char *, ...));
 
 /**
  * @brief Clears the input buffer.

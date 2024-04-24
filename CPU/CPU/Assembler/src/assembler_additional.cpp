@@ -639,7 +639,7 @@ size_t get_ip_pos(Compile_manager *manager)
 	return (size_t)(BYTE_CODE.buf - manager->byte_code_start) / sizeof(double);
 }
 
-void asm_write_log(const char *file_name, const char *func_name, int line, const char *fmt, ...)
+void asm_write_log(const char *fmt, ...)
 {
 
     static FILE *log_file = fopen("asm_log.txt", "w");
@@ -654,7 +654,6 @@ void asm_write_log(const char *file_name, const char *func_name, int line, const
 
     va_start(args, fmt);
 
-	// fprintf(log_file, "file: %s func: %s on line : %d\n", file_name, func_name, line);
     vfprintf(log_file, fmt, args);
 
     va_end(args);

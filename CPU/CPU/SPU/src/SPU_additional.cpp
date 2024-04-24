@@ -79,7 +79,9 @@ spu_err_t process(FILE *bin_file, const char *config_file,
 	int cmp_result            = 666;
 	unsigned int RAM_address  = 0;
 
-	bool run_flag = false;
+	#ifdef CPU_DEBUG
+		bool run_flag = false;
+	#endif
 
 	#define CURRENT_BYTE_CODE\
 		(BYTE_CODE + byte_code_carriage)
@@ -171,7 +173,7 @@ spu_err_t VM_dtor(struct VM *vm)
 #undef UPDATE_BYTE_CODE_CARRIAGE
 #undef MOVE_CARRIAGE
 
-void spu_write_log(const char *file_name, const char *func_name, int line, const char *fmt, ...)
+void spu_write_log(const char *fmt, ...)
 {
 
     static FILE *log_file = fopen("SPU_log.txt", "w");
@@ -186,7 +188,6 @@ void spu_write_log(const char *file_name, const char *func_name, int line, const
 
     va_start(args, fmt);
 
-	// fprintf(log_file, "file: %s func: %s on line : %d\n", file_name, func_name, line);
     vfprintf(log_file, fmt, args);
 
     va_end(args);

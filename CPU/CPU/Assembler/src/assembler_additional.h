@@ -18,20 +18,17 @@
  * Usage: LOG("Message to log");
  */
 #define LOG(...)\
-	asm_write_log(__FILE__, __func__, __LINE__, __VA_ARGS__);
+	asm_write_log(__VA_ARGS__);
 
 /**
  * @brief Logs a message to a file.
  *
  * Logs a message to a file named "log.txt" with the specified format and additional information.
  *
- * @param file_name The name of the file where the log message originates.
- * @param func_name The name of the function where the log message originates.
- * @param line The line number in the source file where the log message originates.
  * @param fmt The format string for the log message.
  * @param ... Additional arguments to be formatted according to the format string.
  */
-void asm_write_log(const char *file_name, const char *func_name, int line, const char *fmt, ...);
+void asm_write_log(const char *fmt, ...);
 
 #define FREAD_CHECK(read_elems, amount)								\
 	if(read_elems != amount)										\

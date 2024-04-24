@@ -5,26 +5,25 @@
 #include "secondary.h"
 
 void print_binary(char *buf, size_t size, const char *buf_name,
-				  void (*write_log)(const char *, const char *, int, const char *, ...))
+			      void (*write_log)(const char *, ...))
 {
-	write_log(__FILE__, __func__, __LINE__, "%s:\n", buf_name);
+	write_log("%s:\n", buf_name);
     for (size_t ID = 0; ID < size; ID++)
 	{
 		if(ID % sizeof(double) == 0)
 		{
-			write_log(__FILE__, __func__, __LINE__,
-			          "double[%lu] - %lf\n", ID / sizeof(double), *(double *)(buf + ID));
+			write_log("double[%lu] - %lf\n", ID / sizeof(double), *(double *)(buf + ID));
 		}
 
         char cur_elem = buf[ID];
-		write_log(__FILE__, __func__, __LINE__, "[%2.lu] - ", ID);
+		write_log("[%2.lu] - ", ID);
 
         for (int bit_offset = 7; bit_offset >= 0; bit_offset--)
 		{
-            write_log(__FILE__, __func__, __LINE__, "%d", (cur_elem >> bit_offset) & 1);
+            write_log("%d", (cur_elem >> bit_offset) & 1);
         }
 
-        write_log(__FILE__, __func__, __LINE__, "\n");
+        write_log("\n");
     }
 }
 

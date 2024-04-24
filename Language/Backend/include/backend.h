@@ -18,7 +18,7 @@ typedef enum
 	BKD_UNKNOWN_VAR         = 1 << 3,
 	BKD_UKNOWN_FUNC         = 1 << 4,
 	BKD_UNKNWON_TYPE        = 1 << 5,
-	BKD_KWD_NODE            = 1 << 6,
+	BKD_INVALID_NODE        = 1 << 6,
 } bkd_err_t;
 
 bkd_err_t assembly(B_tree_node *root, const char *name);

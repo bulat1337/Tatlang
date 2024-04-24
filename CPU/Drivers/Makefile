@@ -24,7 +24,7 @@ FLAGS = -D _DEBUG -ggdb3 \
 
 LINK_FLAGS = -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 
-Include = -I./include/ -I../CPU/SPU/include/ -I../Global/include/ -I../Stack/include/ -I/opt/homebrew/Cellar/sfml/2.6.1/include/
+Include = -I./include/ -I../../Utils/include/ -I../CPU/SPU/include/ -I../Global/include/ -I../Stack/include/ -I/opt/homebrew/Cellar/sfml/2.6.1/include/
 
 $(PATH_LIB)libdrivers.a: $(DRIVE_OBJ)
 	@ ar rvs $@ $(DRIVE_OBJ)

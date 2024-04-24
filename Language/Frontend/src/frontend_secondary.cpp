@@ -22,7 +22,6 @@ void frd_write_log(const char *file_name, const char *fmt, ...)
 
     va_start(args, fmt);
 
-	// fprintf(log_file, "file: %s func: %s on line : %d\n", file_name, func_name, line);
     vfprintf(log_file, fmt, args);
 
     va_end(args);

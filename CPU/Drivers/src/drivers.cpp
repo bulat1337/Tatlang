@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "drivers.h"
+#include "utils.h"
 
 void file_draw(VM *vm, char *current_byte_code, FILE *output_file)
 {
@@ -29,7 +30,7 @@ void window_draw(VM *vm, char * current_byte_code, FILE *junk)
 	unsigned int end  = *(unsigned int *)(current_byte_code + sizeof(double) + sizeof(int));
 
 
-	size_t screen_size = (size_t)sqrt(end - head + 1);
+	unsigned int screen_size = (unsigned int)sqrt(end - head + 1);
 
 	sf::RenderWindow window(sf::VideoMode(screen_size, screen_size), "SFML Window");
 
@@ -48,7 +49,7 @@ void window_draw(VM *vm, char * current_byte_code, FILE *junk)
 
 		for(size_t pixel_ID = head; pixel_ID < end; pixel_ID++)
 		{
-			if(vm->rand_access_mem.user_RAM[pixel_ID] != 46)
+			if(cmp_double(vm->rand_access_mem.user_RAM[pixel_ID], 46))
 			{
 				sf::RectangleShape rectangle(sf::Vector2f(1, 1));
         		rectangle.setFillColor(sf::Color::Red);

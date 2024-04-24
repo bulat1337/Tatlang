@@ -19,7 +19,7 @@
  * Usage: LOG("Message to log");
  */
 #define LOG(...)\
-	spu_write_log(__FILE__, __func__, __LINE__, __VA_ARGS__);
+	spu_write_log(__VA_ARGS__);
 
 /**
  * @brief Logs a message to a file.
@@ -32,7 +32,7 @@
  * @param fmt The format string for the log message.
  * @param ... Additional arguments to be formatted according to the format string.
  */
-void spu_write_log(const char *file_name, const char *func_name, int line, const char *fmt, ...);
+void spu_write_log(const char *fmt, ...);
 
 /**
  * @def CHECK_ERROR(result)
@@ -93,7 +93,7 @@ void spu_write_log(const char *file_name, const char *func_name, int line, const
 #define FILE_PTR_CHECK(file_ptr)                                    \
     if(file_ptr == NULL)                                            \
     {                                                               \
-        LOG("\nERROR: Unable to open "#file_ptr"\n");           \
+        LOG("\nERROR: Unable to open "#file_ptr"\n");     		      \
         return SPU_UNABLE_TO_OPEN_FILE;								\
 	}
 
