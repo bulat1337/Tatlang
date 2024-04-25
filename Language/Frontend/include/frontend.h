@@ -15,6 +15,6 @@ typedef enum
 	FRD_UKNOWN_OP           = 1 << 4,
 } frd_err_t;
 
-Tokens *tokenize(const char *file, frd_err_t error_code);
+Tokens *tokenize(const char *file, frd_err_t *error_code);
 
 #endif

@@ -42,11 +42,11 @@ frd_err_t init_tokens(Tokens *tokens);
 
 void tokens_dtor(Tokens *tokens);
 
-frd_err_t add_node(Tokens *tokens, Node_type type, Node_value value);
+frd_err_t add_token(Tokens *tokens, Node_type type, Node_value value);
 
 Ops get_op(char sym, frd_err_t *error_code);
 
-frd_err_t add_token(Tokens *tokens, char *token);
+frd_err_t add_id(Tokens *tokens, char *token);
 
 bool is_kwd(char *token, Node_type *type);
 
@@ -55,5 +55,15 @@ void dump_tokens(Tokens *tokens);
 void log_op(Ops op);
 
 Node_type get_type(char *token);
+
+char *get_symbs(const char *file_name, frd_err_t *error_code, size_t *file_len);
+
+frd_err_t add_num(Tokens *tokens, char * *symbs_ptr);
+
+frd_err_t process_sym(char * *symbs_ptr, Tokens *tokens, size_t left_amount, bool *processed);
+
+frd_err_t process_op(char * *symbs_ptr, Tokens *tokens);
+
+frd_err_t process_id(char * *symbs_ptr, Tokens *tokens);
 
 #endif

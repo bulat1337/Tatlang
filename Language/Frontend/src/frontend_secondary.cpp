@@ -4,6 +4,7 @@
 
 #include "frontend_secondary.h"
 #include "utils.h"
+#include "file_parser.h"
 
 #include "def_scnd_dsl.h"
 
@@ -116,7 +117,7 @@ void tokens_dtor(Tokens *tokens)
 	tokens->size = 0;
 }
 
-frd_err_t add_node(Tokens *tokens, Node_type type, Node_value value)
+frd_err_t add_token(Tokens *tokens, Node_type type, Node_value value)
 {
 	if(tokens->size >= tokens->capacity)
 	{
@@ -177,19 +178,19 @@ Ops get_op(char sym, frd_err_t *error_code)
 	}
 }
 
-frd_err_t add_token(Tokens *tokens, char *token)
+frd_err_t add_id(Tokens *tokens, char *token)
 {
 	frd_err_t error_code = FRD_ALL_GOOD;
 	Node_type type = VAR;
 
 	if(is_kwd(token, &type))
 	{
-		CALL(add_node(tokens, type, {.var_value = token}));
+		CALL(add_token(tokens, type, {.var_value = token}));
 	}
 	else
 	{
 		LOG("It's VAR: %s\n", token);
-		CALL(add_node(tokens, VAR, {.var_value = token}));
+		CALL(add_token(tokens, VAR, {.var_value = token}));
 	}
 
 	return error_code;
@@ -319,12 +320,7 @@ void dump_tokens(Tokens *tokens)
 	}
 }
 
-#define CASE(op)			\
-	case op:				\
-	{						\
-		LOG("\t"#op"\n");	\
-		break;				\
-	}
+#include "def_log_op_dsl.h"
 
 void log_op(Ops op)
 {
@@ -348,7 +344,7 @@ void log_op(Ops op)
 	}
 }
 
-#undef CASE
+#include "undef_log_op_dsl.h"
 
 #define IS_KWD(check_kwd)\
 	!strncmp(token, check_kwd, LEN(check_kwd))
@@ -379,4 +375,118 @@ Node_type get_type(char *token)
 
 		return UNR_OP;
 	}
+}
+
+#include "def_get_sym_dsl.h"
+
+char *get_symbs(const char *file_name, frd_err_t *error_code, size_t *file_len)
+{
+	WITH_OPEN
+	(
+
+		file_name, "r", code,
+
+		LOG("%s is opened.\n", file_name);
+
+		size_t length = get_file_length(code);
+		*file_len = length;
+
+		LOG("File length: %lu\n", length);
+
+		char *symbs = NULL;
+		CALLOC(symbs, length + 1, char);
+		LOG("symbs is allocated.\n");
+
+		FREAD(symbs, sizeof(char), length, code);
+
+		symbs[length] = '\0';
+
+		LOG("Successful fread code -> symbs.\n");
+
+		return symbs;
+	)
+}
+
+#include "undef_get_sym_dsl.h"
+
+frd_err_t add_num(Tokens *tokens, char * *symbs_ptr)
+{
+	frd_err_t error_code = FRD_ALL_GOOD;
+
+	LOG("It's a number.\n");
+
+	double num = 0;
+
+	sscanf(*symbs_ptr, "%lf", &num);
+
+	LOG("\tnum: %lf\n", num);
+
+	CALL(add_token(tokens, NUM, {.num_value = num}));
+
+	*symbs_ptr = skip_nums(*symbs_ptr);
+
+	return error_code;
+}
+
+frd_err_t process_sym(char * *symbs_ptr, Tokens *tokens, size_t left_amount, bool *processed)
+{
+	frd_err_t error_code = FRD_ALL_GOOD;
+	*processed = true;
+
+	char cur_symb = *(*symbs_ptr);
+
+	switch(cur_symb)
+	{
+		CASE('(', OPEN_BR)
+		CASE(')', CLOSE_BR)
+		CASE('{', OPEN_CBR)
+		CASE('}', CLOSE_CBR)
+		CASE(';', SEMICOLON)
+		case '#':
+		{
+			LOG("Skipping comment.\n");
+			(*symbs_ptr) = skip_comment((*symbs_ptr), left_amount);
+
+			return error_code;
+		}
+	}
+
+	*processed = false;
+	return error_code;
+}
+
+frd_err_t process_op(char * *symbs_ptr, Tokens *tokens)
+{
+	frd_err_t error_code = FRD_ALL_GOOD;
+
+	LOG("It's OP.\n");
+
+	Ops op = get_op(*(*symbs_ptr), &error_code);
+	CHECK_ERROR;
+
+	CALL(add_token(tokens, OP, {.op_value = op}));
+
+	(*symbs_ptr)++;
+
+	return error_code;
+}
+
+frd_err_t process_id(char * *symbs_ptr, Tokens *tokens)
+{
+	frd_err_t error_code = FRD_ALL_GOOD;
+
+	char *token = NULL;
+	CALLOC(token, MAX_TOKEN_SIZE, char);
+
+	int amount = 0;
+
+	sscanf((*symbs_ptr), "%[a-zA-Z0-9,_,$]%n", token, &amount);
+
+	LOG("\ttoken: %s\n", token);
+
+	CALL(add_id(tokens, token));
+
+	(*symbs_ptr) += amount;
+
+	return error_code;
 }

@@ -16,7 +16,7 @@ int main(int argc, const char *argv[])
 	frd_err_t frd_error_code = FRD_ALL_GOOD;
 
 // Frontend
-	Tokens *tokens = tokenize(argv[1], frd_error_code);
+	Tokens *tokens = tokenize(argv[1], &frd_error_code);
 	if(frd_error_code != FRD_ALL_GOOD)
 	{
 		fprintf(stderr, "tokenize error: %d.\n", frd_error_code);

@@ -1,15 +1,6 @@
-#undef CALL
-#define CALL(...)				\
-	*error_code = __VA_ARGS__;	\
-	CHECK_ERROR;
+#undef ALLOCATION_CHECK
+#undef FILE_PTR_CHECK
 
-
-#define CHECK_ERROR													\
-	if(*error_code != FRD_ALL_GOOD)									\
-		return NULL;
-
-#define LEFT_AMOUNT													\
-	(file_len - (size_t)(symbs - symbs_start))
 
 #define ALLOCATION_CHECK(ptr)										\
 	if(ptr == NULL)													\
@@ -24,7 +15,7 @@
 	if(ptr == NULL)													\
 	{																\
 		fprintf(stderr, "Unable to open "#ptr"\n");					\
-		error_code = FRD_UNABLE_TO_OPEN_FILE;						\
+		*error_code = FRD_UNABLE_TO_OPEN_FILE;						\
 		return NULL;												\
 	}
 
@@ -35,6 +26,6 @@
 		LOG("\t expected amount: %lu.\n", amount);					\
 		LOG("\t read amount: %lu.\n", read_elems);					\
 																	\
-		error_code = FRD_INVALID_FREAD;								\
+		*error_code = FRD_INVALID_FREAD;								\
 		return NULL;												\
 	}
