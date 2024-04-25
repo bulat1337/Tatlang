@@ -39,7 +39,7 @@ void rec_write_log(const char *file_name, const char *fmt, ...)
 
 B_tree_node *get_scope()
 {
-	if(CUR_TYPE == OCBR)
+	if(CUR_TYPE == OPEN_CBR)
 	{
 		id++;
 
@@ -47,9 +47,9 @@ B_tree_node *get_scope()
 
 		PARSE_LOG("There is scope.\n");
 
-		B_tree_node *root = get_all_scopes(true, CCBR);
+		B_tree_node *root = get_all_scopes(true, CLOSE_CBR);
 
-		root = manage_scs(root);
+		root = manage_scopes(root);
 
 		if(scopes_sce_debt)
 		{
@@ -92,7 +92,7 @@ B_tree_node *get_cmd()
 		}
 		else
 		{
-			return CR_SMC(cmd, NULL);
+			return CR_SEMICOLON(cmd, NULL);
 		}
 	}
 	else if(CUR_TYPE == FUNC)
@@ -103,10 +103,10 @@ B_tree_node *get_cmd()
 		CHECK_RET(cmd);
 
 
-		if(CUR_TYPE == SMC)
+		if(CUR_TYPE == SEMICOLON)
 		{
 			id++;
-			PARSE_LOG("SMC ok.\n");
+			PARSE_LOG("SEMICOLON ok.\n");
 
 
 			if(cmds_sce_debt)
@@ -117,7 +117,7 @@ B_tree_node *get_cmd()
 			}
 			else
 			{
-				return CR_SMC(cmd, NULL);
+				return CR_SEMICOLON(cmd, NULL);
 			}
 		}
 		else
@@ -132,10 +132,10 @@ B_tree_node *get_cmd()
 		cmd = get_ass();
 		CHECK_RET(cmd);
 
-		if(CUR_TYPE == SMC)
+		if(CUR_TYPE == SEMICOLON)
 		{
 			id++;
-			PARSE_LOG("SMC ok.\n");
+			PARSE_LOG("SEMICOLON ok.\n");
 
 
 			if(cmds_sce_debt)
@@ -146,7 +146,7 @@ B_tree_node *get_cmd()
 			}
 			else
 			{
-				return CR_SMC(cmd, NULL);
+				return CR_SEMICOLON(cmd, NULL);
 			}
 		}
 		else
@@ -161,9 +161,9 @@ B_tree_node *get_func()
 	char *func_id = CUR_VAR;
 	id++;
 
-	if(CUR_TYPE == OBR)
+	if(CUR_TYPE == OPEN_BR)
 	{
-		PARSE_LOG("OBR ok.\n");
+		PARSE_LOG("OPEN_BR ok.\n");
 		id++;
 	}
 	else
@@ -173,28 +173,27 @@ B_tree_node *get_func()
 
 	B_tree_node *child = NULL;
 
-	if(IS_KWD(func_id, "getvar"))
+	if(IS_KEYWORD(func_id, "getvar"))
 	{
 		PARSE_LOG("Getting brace var.\n");
 		child = get_id();
 	}
-	else if(IS_KWD(func_id, "putexpr"))
+	else if(IS_KEYWORD(func_id, "putexpr"))
 	{
 		PARSE_LOG("Getting brace expression.\n");
 		child = get_add();
 	}
 	else
 	{
-		printf("%s.\n", func_id);
 		SYNTAX_ERROR;
 	}
 
 
 	CHECK_RET(child);
 
-	if(CUR_TYPE == CBR)
+	if(CUR_TYPE == CLOSE_BR)
 	{
-		PARSE_LOG("CBR ok\n");
+		PARSE_LOG("CLOSE_BR ok\n");
 		id++;
 
 		return CR_FUNC(func_id, NULL, child);
@@ -207,18 +206,18 @@ B_tree_node *get_func()
 
 B_tree_node *get_cond(Node_type type)
 {
-	if(CUR_TYPE == OBR)
+	if(CUR_TYPE == OPEN_BR)
 	{
-		PARSE_LOG("OBR ok.\n");
+		PARSE_LOG("OPEN_BR ok.\n");
 		id++;
 
 		PARSE_LOG("Getting brace expression.\n");
 		B_tree_node *br_expr = get_add();
 		CHECK_RET(br_expr);
 
-		if(CUR_TYPE == CBR)
+		if(CUR_TYPE == CLOSE_BR)
 		{
-			PARSE_LOG("CBR ok\n");
+			PARSE_LOG("CLOSE_BR ok\n");
 			id++;
 
 			B_tree_node *scope = get_scope();
@@ -315,13 +314,13 @@ B_tree_node *get_mul()
 
 B_tree_node *get_par()
 {
-	if(CUR_TYPE == OBR)
+	if(CUR_TYPE == OPEN_BR)
 	{
 		id++;
 		B_tree_node *val = get_add();
 		CHECK_RET(val);
 
-		SYNTAX_CHECK(CUR_TYPE == CBR);
+		SYNTAX_CHECK(CUR_TYPE == CLOSE_BR);
 		id++;
 
 		return val;
@@ -333,7 +332,7 @@ B_tree_node *get_par()
 
 		return val;
 	}
-	else if(CUR_TYPE == UN_OP)
+	else if(CUR_TYPE == UNR_OP)
 	{
 		B_tree_node *val = get_unary();
 		CHECK_RET(val);
@@ -350,9 +349,9 @@ B_tree_node *get_par()
 }
 
 #define OP_CASE(op, name)					\
-	else if(IS_KWD(op_name, name))			\
+	else if(IS_KEYWORD(op_name, name))			\
 	{										\
-		return CR_UN_OP(op, NULL, child);	\
+		return CR_UNR_OP(op, NULL, child);	\
 	}										\
 
 B_tree_node *get_unary()
@@ -365,17 +364,17 @@ B_tree_node *get_unary()
 
 	id++;
 
-	if(CUR_TYPE == OBR)
+	if(CUR_TYPE == OPEN_BR)
 	{
-		PARSE_LOG("OBR ok\n");
+		PARSE_LOG("OPEN_BR ok\n");
 
 		id++;
 		B_tree_node *child = get_add();
 		CHECK_RET(child);
 
-		if(CUR_TYPE == CBR)
+		if(CUR_TYPE == CLOSE_BR)
 		{
-			PARSE_LOG("CBR ok\n");
+			PARSE_LOG("CLOSE_BR ok\n");
 
 			id++;
 			if(false)
@@ -475,22 +474,22 @@ B_tree_node *get_all_scopes(bool manage_ccbrs, Node_type end_type)
 	if(manage_ccbrs)
 	{
 		sce_debt++;
-		PARSE_LOG("CCBR for scope ok.\n");
+		PARSE_LOG("CLOSE_CBR for scope ok.\n");
 		id++;
 	}
 
 	return root;
 }
 
-B_tree_node *manage_scs(B_tree_node *root)
+B_tree_node *manage_scopes(B_tree_node *root)
 {
-	if(root->type == SCS)
+	if(root->type == SCOPE_START)
 	{
-		root = CR_SCS(NULL, root);
+		root = CR_SCOPE_START(NULL, root);
 	}
 	else
 	{
-		root->type = SCS;
+		root->type = SCOPE_START;
 	}
 
 	return root;
@@ -500,7 +499,7 @@ B_tree_node *pay_debt_scope(B_tree_node *root, size_t scopes_sce_debt)
 {
 	for(size_t debt_id = 0; debt_id < scopes_sce_debt; debt_id++)
 	{
-		root = CR_SCE(NULL, root);
+		root = CR_SCOPE_END(NULL, root);
 		PARSE_LOG("Scope is paying debt.\n");
 	}
 
@@ -509,12 +508,12 @@ B_tree_node *pay_debt_scope(B_tree_node *root, size_t scopes_sce_debt)
 
 B_tree_node *pay_debt_cmd(B_tree_node *cmd, size_t cmds_sce_debt)
 {
-	B_tree_node *cmd_parent = CR_SCE(NULL, NULL);
+	B_tree_node *cmd_parent = CR_SCOPE_END(NULL, NULL);
 	B_tree_node *cur_node = cmd_parent;
 
 	for(size_t debt_id = 0; debt_id < cmds_sce_debt - 1; debt_id++)
 	{
-		cur_node->right = CR_SCE(NULL, NULL);
+		cur_node->right = CR_SCOPE_END(NULL, NULL);
 		cur_node = cur_node->right;
 	}
 

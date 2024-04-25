@@ -17,7 +17,7 @@ B_tree_node *parse_tokens(Tokens *passed_tokens)
 
 	if(CUR_TYPE == END)
 	{
-		return CR_SMC(NULL, NULL);
+		return CR_SEMICOLON(NULL, NULL);
 	}
 
 	B_tree_node *root = get_all_scopes(false, END);

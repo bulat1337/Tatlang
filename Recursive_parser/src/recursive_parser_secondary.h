@@ -18,17 +18,17 @@ extern size_t id;
 #define CUR_VAR\
 	tokens->data[id].value.var_value
 
-#define CR_SMC(left_child, right_child)\
-	create_node(SMC, {.num_value = 0}, left_child, right_child).arg.node;
+#define CR_SEMICOLON(left_child, right_child)\
+	create_node(SEMICOLON, {.num_value = 0}, left_child, right_child).arg.node;
 
-#define CR_SCE(left_child, right_child)\
-	create_node(SCE, {.num_value = 0}, left_child, right_child).arg.node;
+#define CR_SCOPE_END(left_child, right_child)\
+	create_node(SCOPE_END, {.num_value = 0}, left_child, right_child).arg.node;
 
 #define CR_COND(type, left_child, right_child)\
 	create_node(type, {.num_value = 0}, left_child, right_child).arg.node;
 
-#define CR_KWD(val, left_child, right_child)\
-	create_node(KWD, {.var_value = val}, left_child, right_child).arg.node;
+#define CR_KEYWORD(val, left_child, right_child)\
+	create_node(KEYWORD, {.var_value = val}, left_child, right_child).arg.node;
 
 #define CR_FUNC(val, left_child, right_child)\
 	create_node(FUNC, {.var_value = val}, left_child, right_child).arg.node;
@@ -39,8 +39,8 @@ extern size_t id;
 #define CR_OP(op, left_child, right_child)\
 	create_node(OP, {.op_value = op}, left_child, right_child).arg.node
 
-#define CR_UN_OP(op, left_child, right_child)\
-	create_node(UN_OP, {.op_value = op}, left_child, right_child).arg.node
+#define CR_UNR_OP(op, left_child, right_child)\
+	create_node(UNR_OP, {.op_value = op}, left_child, right_child).arg.node
 
 #define CR_NUM(val, left_child, right_child)\
 	create_node(NUM, {.num_value = val}, left_child, right_child).arg.node;
@@ -48,11 +48,11 @@ extern size_t id;
 #define CR_VAR(val, left_child, right_child)\
 	create_node(VAR, {.var_value = val}, left_child, right_child).arg.node;
 
-#define CR_SCS(left_child, right_child)\
-	create_node(SCS, {.num_value = 0}, left_child, right_child).arg.node;
+#define CR_SCOPE_START(left_child, right_child)\
+	create_node(SCOPE_START, {.num_value = 0}, left_child, right_child).arg.node;
 
-#define IS_KWD(var, check_kwd)\
-	!strncmp(var, check_kwd, LEN(check_kwd))
+#define IS_KEYWORD(var, check_keyword)\
+	!strncmp(var, check_keyword, LEN(check_keyword))
 
 #define SYNTAX_CHECK(cond)													\
 	if(!(cond))																\
@@ -74,10 +74,10 @@ extern size_t id;
 		REPORT_ERROR(#ptr" is NULL.\n");			\
 	}												\
 
-#define DO_IF_KWD(kwd, op)															\
-	if(!strncmp(var_name, kwd, sizeof(kwd) / sizeof(char))) 						\
+#define DO_IF_KEYWORD(keyword, op)															\
+	if(!strncmp(var_name, keyword, sizeof(keyword) / sizeof(char))) 						\
 	{																				\
-		printf("It's kwd: %s\n", var_name);											\
+		printf("It's keyword: %s\n", var_name);											\
 																					\
 		if(CUR_TYPE == OBR)															\
 		{																			\
@@ -136,7 +136,7 @@ size_t       take_debt            ();
 
 B_tree_node *get_all_scopes      (bool manage_ccbrs, Node_type end_type);
 
-B_tree_node *manage_scs          (B_tree_node *root);
+B_tree_node *manage_scopes          (B_tree_node *root);
 
 B_tree_node *pay_debt_scope      (B_tree_node *root, size_t scopes_sce_debt);
 

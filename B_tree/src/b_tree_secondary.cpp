@@ -75,7 +75,7 @@ error_t print_regular_nodes(struct B_tree_node *node,
 
 			break;
 		}
-		case UN_OP:
+		case UNR_OP:
 		{
 			char *operation_token = get_operation_token(node->value.op_value);
 			if(operation_token == NULL)
@@ -87,7 +87,7 @@ error_t print_regular_nodes(struct B_tree_node *node,
 			nd_description->color = RASPBERRIE_PINK;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: UN_OP | val: %s} | {L: %p | R: %p}}",
+					"{%p | {type: UNR_OP | val: %s} | {L: %p | R: %p}}",
 					node, operation_token, node->left, node->right);
 
 			free(operation_token);
@@ -103,12 +103,12 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
-		case KWD:
+		case KEYWORD:
 		{
 			nd_description->color = AGRESSIVE_RED;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: KWD | val: %s} | {L: %p | R: %p}}",
+					"{%p | {type: KEYWORD | val: %s} | {L: %p | R: %p}}",
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
@@ -139,66 +139,66 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
-		case SMC:
+		case SEMICOLON:
 		{
 			nd_description->color = NEUTRAL_GREY;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: SMC | val: -} | {L: %p | R: %p}}",
+					"{%p | {type: SEMICOLON | val: -} | {L: %p | R: %p}}",
 					node, node->left, node->right);
 			break;
 		}
-		case SCS:
+		case SCOPE_START:
 		{
 			nd_description->color = PURPLE;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: SCS | val: -} | {L: %p | R: %p}}",
+					"{%p | {type: SCOPE_START | val: -} | {L: %p | R: %p}}",
 					node, node->left, node->right);
 			break;
 		}
-		case SCE:
+		case SCOPE_END:
 		{
 			nd_description->color = DARK_PURPLE;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: SCE | val: -} | {L: %p | R: %p}}",
+					"{%p | {type: SCOPE_END | val: -} | {L: %p | R: %p}}",
 					node, node->left, node->right);
 			break;
 		}
-		case OBR:
+		case OPEN_BR:
 		{
 			nd_description->color = NEUTRAL_GREY;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: OBR | val: -} | {L: %p | R: %p}}",
+					"{%p | {type: OPEN_BR | val: -} | {L: %p | R: %p}}",
 					node, node->left, node->right);
 			break;
 		}
-		case CBR:
+		case CLOSE_BR:
 		{
 			nd_description->color = NEUTRAL_GREY;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: CBR | val: -} | {L: %p | R: %p}}",
+					"{%p | {type: CLOSE_BR | val: -} | {L: %p | R: %p}}",
 					node, node->left, node->right);
 			break;
 		}
-		case OCBR:
+		case OPEN_CBR:
 		{
 			nd_description->color = NEUTRAL_GREY;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: OCBR | val: -} | {L: %p | R: %p}}",
+					"{%p | {type: OPEN_CBR | val: -} | {L: %p | R: %p}}",
 					node, node->left, node->right);
 			break;
 		}
-		case CCBR:
+		case CLOSE_CBR:
 		{
 			nd_description->color = NEUTRAL_GREY;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: CCBR | val: -} | {L: %p | R: %p}}",
+					"{%p | {type: CLOSE_CBR | val: -} | {L: %p | R: %p}}",
 					node, node->left, node->right);
 			break;
 		}
@@ -320,29 +320,29 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 			DUMP("%18.2lf", node->value.num_value);
 			break;
 		}
-		case OBR:
+		case OPEN_BR:
 		{
-			DUMP("          OBR");
+			DUMP("          OPEN_BR");
 			break;
 		}
-		case CBR:
+		case CLOSE_BR:
 		{
-			DUMP("          CBR");
+			DUMP("          CLOSE_BR");
 			break;
 		}
-		case OCBR:
+		case OPEN_CBR:
 		{
-			DUMP("          OCBR");
+			DUMP("          OPEN_CBR");
 			break;
 		}
-		case CCBR:
+		case CLOSE_CBR:
 		{
-			DUMP("          CCBR");
+			DUMP("          CLOSE_CBR");
 			break;
 		}
-		case SMC:
+		case SEMICOLON:
 		{
-			DUMP("          SMC");
+			DUMP("          SEMICOLON");
 			break;
 		}
 		case IF:
@@ -365,14 +365,14 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 			DUMP("          END");
 			break;
 		}
-		case SCS:
+		case SCOPE_START:
 		{
-			DUMP("          SCS");
+			DUMP("          SCOPE_START");
 			break;
 		}
-		case SCE:
+		case SCOPE_END:
 		{
-			DUMP("          SCE");
+			DUMP("          SCOPE_END");
 			break;
 		}
 		case OP:
@@ -404,9 +404,9 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 			#undef CASE
 			break;
 		}
-		case UN_OP:
+		case UNR_OP:
 		{
-			DUMP("          UN_OP");
+			DUMP("          UNR_OP");
 
 			#define CASE(OP_TYPE)\
 			case OP_TYPE:\
@@ -437,9 +437,9 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 			DUMP("               %s", node->value.var_value);
 			break;
 		}
-		case KWD:
+		case KEYWORD:
 		{
-			DUMP("          KWD");
+			DUMP("          KEYWORD");
 			DUMP("               %s", node->value.var_value);
 			break;
 		}

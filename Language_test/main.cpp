@@ -69,7 +69,7 @@ int main(int argc, const char *argv[])
 	}
 
 	spu_err_t spu_error = execute("root.bin", "config", &window_draw);
-	if(asm_error != ASM_ALL_GOOD)
+	if(spu_error != SPU_ALL_GOOD)
 	{
 		fprintf(stderr, "execute error: %d.\n", mid_error_code);
 

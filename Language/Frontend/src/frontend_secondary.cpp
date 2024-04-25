@@ -201,7 +201,7 @@ bool is_kwd(char *token, Node_type *type)
 	{
 		if(!strncmp(token, kwds[kwd_id], strlen(token)))
 		{
-			LOG("It's KWD: %s\n", token);
+			LOG("It's KEYWORD: %s\n", token);
 
 			*type = get_type(token);
 
@@ -240,7 +240,7 @@ void dump_tokens(Tokens *tokens)
 				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
-			case KWD:
+			case KEYWORD:
 			{
 				LOG("\tKWD");
 				LOG("\t%s\n", tokens->data[token_id].value.var_value);
@@ -252,42 +252,42 @@ void dump_tokens(Tokens *tokens)
 				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
-			case UN_OP:
+			case UNR_OP:
 			{
 				LOG("\tUN_OP");
 				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
-			case SCS:
+			case SCOPE_START:
 			{
 				LOG("\tSCS");
 				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
-			case SCE:
+			case SCOPE_END:
 			{
 				LOG("\tSCE");
 				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
-			case OBR:
+			case OPEN_BR:
 			{
-				LOG("\tOBR\n");
+				LOG("\tOPEN_BR\n");
 				break;
 			}
-			case CBR:
+			case CLOSE_BR:
 			{
-				LOG("\tCBR\n");
+				LOG("\tCLOSE_BR\n");
 				break;
 			}
-			case OCBR:
+			case OPEN_CBR:
 			{
-				LOG("\tOCBR\n");
+				LOG("\tOPEN_CBR\n");
 				break;
 			}
-			case CCBR:
+			case CLOSE_CBR:
 			{
-				LOG("\tCCBR\n");
+				LOG("\tCLOSE_CBR\n");
 				break;
 			}
 			case IF:
@@ -300,9 +300,9 @@ void dump_tokens(Tokens *tokens)
 				LOG("\tWHILE\n");
 				break;
 			}
-			case SMC:
+			case SEMICOLON:
 			{
-				LOG("\tSMC\n");
+				LOG("\tSEMICOLON\n");
 				break;
 			}
 			case END:
@@ -377,6 +377,6 @@ Node_type get_type(char *token)
 	{
 		LOG("It's unary operation.\n");
 
-		return UN_OP;
+		return UNR_OP;
 	}
 }

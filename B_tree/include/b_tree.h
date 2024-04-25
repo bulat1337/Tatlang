@@ -29,22 +29,22 @@ typedef enum
 
 enum Node_type
 {
-	NUM   = 0,
-	OP    = 1,
-	VAR   = 2,
-	OBR   = 3,
-	CBR   = 4,
-	OCBR  = 5,
-	CCBR  = 6,
-	SMC   = 7,
-	KWD   = 8,
-	END   = 9,
-	SCS   = 10,
-	SCE   = 11,
-	IF    = 12,
-	WHILE = 13,
-	FUNC  = 14,
-	UN_OP = 15,
+	NUM         = 0,
+	OP          = 1,
+	VAR         = 2,
+	OPEN_BR     = 3,
+	CLOSE_BR    = 4,
+	OPEN_CBR    = 5,
+	CLOSE_CBR   = 6,
+	SEMICOLON   = 7,
+	KEYWORD     = 8,
+	END         = 9,
+	SCOPE_START = 10,
+	SCOPE_END   = 11,
+	IF          = 12,
+	WHILE       = 13,
+	FUNC        = 14,
+	UNR_OP      = 15,
 };
 
 enum Ops

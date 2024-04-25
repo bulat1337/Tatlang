@@ -27,14 +27,14 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 	switch(node->type)
 	{
-		case SMC:
+		case SEMICOLON:
 		{
 			ASMBL(node->left);
 			ASMBL(node->right);
 
 			break;
 		}
-		case SCS:
+		case SCOPE_START:
 		{
 			CALL(upgrade_n_table(nm_tbl_mngr));
 
@@ -43,7 +43,7 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 			break;
 		}
-		case SCE:
+		case SCOPE_END:
 		{
 			CALL(downgrade_n_table(nm_tbl_mngr));
 
@@ -89,7 +89,7 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 			break;
 		}
-		case UN_OP:
+		case UNR_OP:
 		{
 			CALL(write_op(node, asm_file, nm_tbl_mngr));
 
@@ -107,33 +107,33 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 			break;
 		}
-		case KWD:
+		case KEYWORD:
 		{
-			LOG("%s: ERROR:\n\tNo KWD allowed in the language tree.\n", __func__);
+			LOG("%s: ERROR:\n\tNo KEYWORD allowed in the language tree.\n", __func__);
 
 			return BKD_INVALID_NODE;
 		}
-		case OBR:
+		case OPEN_BR:
 		{
-			LOG("%s: ERROR:\n\tNo OBR allowed in the language tree.\n", __func__);
+			LOG("%s: ERROR:\n\tNo OPEN_BR allowed in the language tree.\n", __func__);
 
 			return BKD_INVALID_NODE;
 		}
-		case CBR:
+		case CLOSE_BR:
 		{
-			LOG("%s: ERROR:\n\tNo CBR allowed in the language tree.\n", __func__);
+			LOG("%s: ERROR:\n\tNo CLOSE_BR allowed in the language tree.\n", __func__);
 
 			return BKD_INVALID_NODE;
 		}
-		case OCBR:
+		case OPEN_CBR:
 		{
-			LOG("%s: ERROR:\n\tNo OCBR allowed in the language tree.\n", __func__);
+			LOG("%s: ERROR:\n\tNo OPEN_CBR allowed in the language tree.\n", __func__);
 
 			return BKD_INVALID_NODE;
 		}
-		case CCBR:
+		case CLOSE_CBR:
 		{
-			LOG("%s: ERROR:\n\tNo CCBR allowed in the language tree.\n", __func__);
+			LOG("%s: ERROR:\n\tNo CLOSE_CBR allowed in the language tree.\n", __func__);
 
 			return BKD_INVALID_NODE;
 		}

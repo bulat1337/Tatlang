@@ -38,15 +38,16 @@ Tokens *tokenize(const char *file, frd_err_t error_code = FRD_ALL_GOOD)
 
 		while((size_t)(symbs - symbs_start) < file_len)
 		{
-			LOG("\nCurrent symbol: %c\n", *symbs);
+			char cur_symb = *symbs;
+			LOG("\nCurrent symbol: %c\n", cur_symb);
 
-			if(is_blank(*symbs))
+			if(is_blank(cur_symb))
 			{
 				LOG("It's blank.\n");
 
 				symbs++;
 			}
-			else if(is_number(*symbs))
+			else if(is_number(cur_symb))
 			{
 				LOG("It's a number.\n");
 
@@ -58,76 +59,99 @@ Tokens *tokenize(const char *file, frd_err_t error_code = FRD_ALL_GOOD)
 
 				symbs = skip_nums(symbs);
 			}
-			else if(*symbs == '(')
-			{
-				LOG("It's OBR.\n");
-
-				CALL(add_node(tokens, OBR, {.num_value = 0}));
-
-				symbs++;
-			}
-			else if(*symbs == ')')
-			{
-				LOG("It's CBR.\n");
-
-				CALL(add_node(tokens, CBR, {.num_value = 0}));
-
-				symbs++;
-			}
-			else if(*symbs == '{')
-			{
-				LOG("It's OCBR.\n");
-
-				CALL(add_node(tokens, OCBR, {.num_value = 0}));
-
-				symbs++;
-			}
-			else if(*symbs == '}')
-			{
-				LOG("It's CCBR.\n");
-
-				CALL(add_node(tokens, CCBR, {.num_value = 0}));
-
-				symbs++;
-			}
-			else if(*symbs == ';')
-			{
-				LOG("It's SMC.\n");
-
-				CALL(add_node(tokens, SMC, {.num_value = 0}));
-
-				symbs++;
-			}
-			else if(is_op(*symbs))
-			{
-				LOG("It's OP.\n");
-
-				Ops op = get_op(*symbs, &error_code);
-				CHECK_ERROR;
-
-				CALL(add_node(tokens, OP, {.op_value = op}));
-
-				symbs++;
-			}
-			else if(*symbs == '#')
-			{
-				LOG("Skipping comment.\n");
-				symbs = skip_comment(symbs, LEFT_AMOUNT);
-			}
 			else
 			{
-				char *token = NULL;
-				CALLOC(token, MAX_TOKEN_SIZE, char);
+				switch(cur_symb)
+				{
+					case '(':
+					{
+						LOG("It's OPEN_BR.\n");
 
-				int amount = 0;
+						CALL(add_node(tokens, OPEN_BR, {.num_value = 0}));
 
-				sscanf(symbs, "%[a-zA-Z0-9,_,$]%n", token, &amount);
+						symbs++;
 
-				LOG("\ttoken: %s\n", token);
+						break;
+					}
+					case ')':
+					{
+						LOG("It's CLOSE_BR.\n");
 
-				CALL(add_token(tokens, token));
+						CALL(add_node(tokens, CLOSE_BR, {.num_value = 0}));
 
-				symbs += amount;
+						symbs++;
+
+						break;
+					}
+					case '{':
+					{
+						LOG("It's OPEN_CBR.\n");
+
+						CALL(add_node(tokens, OPEN_CBR, {.num_value = 0}));
+
+						symbs++;
+
+						break;
+					}
+					case '}':
+					{
+						LOG("It's CLOSE_CBR.\n");
+
+						CALL(add_node(tokens, CLOSE_CBR, {.num_value = 0}));
+
+						symbs++;
+
+						break;
+					}
+					case ';':
+					{
+						LOG("It's SEMICOLON.\n");
+
+						CALL(add_node(tokens, SEMICOLON, {.num_value = 0}));
+
+						symbs++;
+
+						break;
+					}
+					case '#':
+					{
+						LOG("Skipping comment.\n");
+						symbs = skip_comment(symbs, LEFT_AMOUNT);
+
+						break;
+					}
+					default:
+					{
+						if(is_op(cur_symb))
+						{
+							LOG("It's OP.\n");
+
+							Ops op = get_op(cur_symb, &error_code);
+							CHECK_ERROR;
+
+							CALL(add_node(tokens, OP, {.op_value = op}));
+
+							symbs++;
+						}
+						else
+						{
+							char *token = NULL;
+							CALLOC(token, MAX_TOKEN_SIZE, char);
+
+							int amount = 0;
+
+							sscanf(symbs, "%[a-zA-Z0-9,_,$]%n", token, &amount);
+
+							LOG("\ttoken: %s\n", token);
+
+							CALL(add_token(tokens, token));
+
+							symbs += amount;
+						}
+
+						break;
+					}
+				}
 			}
 		}
 	)
