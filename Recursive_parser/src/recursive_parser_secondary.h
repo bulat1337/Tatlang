@@ -58,6 +58,11 @@ extern size_t id;
 	if(!(cond))																\
 	{																		\
 		REPORT_ERROR("Syntax ERROR on %d: "#cond" is fasle\n", __LINE__);	\
+	}																		\
+	else																	\
+	{																		\
+		PARSE_LOG(#cond" - OK.\n");											\
+		id++;																\
 	}
 
 #define REPORT_ERROR(...)							\
@@ -74,73 +79,46 @@ extern size_t id;
 		REPORT_ERROR(#ptr" is NULL.\n");			\
 	}												\
 
-#define DO_IF_KEYWORD(keyword, op)															\
-	if(!strncmp(var_name, keyword, sizeof(keyword) / sizeof(char))) 						\
-	{																				\
-		printf("It's keyword: %s\n", var_name);											\
-																					\
-		if(CUR_TYPE == OBR)															\
-		{																			\
-			id++;																	\
-			B_tree_node *child = get_add();											\
-			CHECK_RET(child);														\
-																					\
-			if(CUR_TYPE == CBR)														\
-			{																		\
-				id++;																\
-				return CR_OP(op, NULL, child);										\
-			}																		\
-			else																	\
-			{																		\
-				SYNTAX_ERROR;														\
-			}																		\
-		}																			\
-		else																		\
-		{																			\
-			SYNTAX_ERROR;															\
-		}																			\
-	}
-
 #define PARSE_LOG(...)\
 	rec_write_log("parse_log.txt", __VA_ARGS__);
 
-void         rec_write_log       (const char *file_name, const char *fmt, ...);
+void         rec_write_log  (const char *file_name, const char *fmt, ...);
 
-B_tree_node *get_cmd             ();
+B_tree_node *get_cmd        ();
 
-B_tree_node *get_func            ();
+B_tree_node *get_func       ();
 
-B_tree_node *get_cond            (Node_type type);
+B_tree_node *get_cond       (Node_type type);
 
-B_tree_node *get_ass             ();
+B_tree_node *get_ass        ();
 
-B_tree_node *get_num             ();
+B_tree_node *get_num        ();
 
-B_tree_node *get_add             ();
+B_tree_node *get_add        ();
 
-B_tree_node *get_mul             ();
+B_tree_node *get_mul        ();
 
-B_tree_node *get_par             ();
+B_tree_node *get_par        ();
 
-B_tree_node *get_id              ();
+B_tree_node *get_id         ();
 
-B_tree_node *get_pow             ();
+B_tree_node *get_pow        ();
 
-B_tree_node *get_scope           ();
+B_tree_node *get_scope      ();
 
-B_tree_node *get_unary			 ();
+B_tree_node *get_unary      ();
 
-B_tree_node *move_scope_end       (B_tree_node *root);
+B_tree_node *move_scope_end (B_tree_node *root);
 
-size_t       take_debt            ();
+size_t       take_debt      ();
 
-B_tree_node *get_all_scopes      (bool manage_ccbrs, Node_type end_type);
+B_tree_node *get_all_scopes (bool manage_ccbrs, Node_type end_type);
 
-B_tree_node *manage_scopes          (B_tree_node *root);
+B_tree_node *manage_scopes  (B_tree_node *root);
 
-B_tree_node *pay_debt_scope      (B_tree_node *root, size_t scopes_sce_debt);
+B_tree_node *pay_debt_scope (B_tree_node *root, size_t scopes_sce_debt);
 
-B_tree_node *pay_debt_cmd        (B_tree_node *cmd, size_t cmds_sce_debt);
+B_tree_node *pay_debt_cmd   (B_tree_node *cmd, size_t cmds_sce_debt);
 
 
 

@@ -5,19 +5,6 @@
 
 static size_t sce_debt = 0;
 
-#define FIRST_SYM_COND									\
-	('a' <= *(cur_str) && *(cur_str) <= 'z') ||			\
-	('A' <= *(cur_str) && *(cur_str) <= 'Z') ||			\
-	(*(cur_str) == '_') ||								\
-	(*(cur_str) == '$')
-
-#define SYM_COND																\
-	('a' <= *(cur_str + sym_counter) && *(cur_str + sym_counter) <= 'z') ||		\
-	('A' <= *(cur_str + sym_counter) && *(cur_str + sym_counter) <= 'Z') ||		\
-	('0' <= *(cur_str + sym_counter) && *(cur_str + sym_counter) <= '9') ||		\
-	(*(cur_str + sym_counter) == '_') ||										\
-	(*(cur_str + sym_counter) == '$')
-
 void rec_write_log(const char *file_name, const char *fmt, ...)
 {
     static FILE *log_file = fopen(file_name, "w");
@@ -48,6 +35,7 @@ B_tree_node *get_scope()
 		PARSE_LOG("There is scope.\n");
 
 		B_tree_node *root = get_all_scopes(true, CLOSE_CBR);
+		CHECK_RET(root);
 
 		root = manage_scopes(root);
 
@@ -102,27 +90,17 @@ B_tree_node *get_cmd()
 		cmd = get_func();
 		CHECK_RET(cmd);
 
+		SYNTAX_CHECK(CUR_TYPE == SEMICOLON);
 
-		if(CUR_TYPE == SEMICOLON)
+		if(cmds_sce_debt)
 		{
-			id++;
-			PARSE_LOG("SEMICOLON ok.\n");
+			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
 
-
-			if(cmds_sce_debt)
-			{
-				B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
-
-				return cmd_parent;
-			}
-			else
-			{
-				return CR_SEMICOLON(cmd, NULL);
-			}
+			return cmd_parent;
 		}
 		else
 		{
-			SYNTAX_ERROR;
+			return CR_SEMICOLON(cmd, NULL);
 		}
 	}
 	else
@@ -132,27 +110,19 @@ B_tree_node *get_cmd()
 		cmd = get_ass();
 		CHECK_RET(cmd);
 
-		if(CUR_TYPE == SEMICOLON)
+		SYNTAX_CHECK(CUR_TYPE == SEMICOLON);
+
+		if(cmds_sce_debt)
 		{
-			id++;
-			PARSE_LOG("SEMICOLON ok.\n");
+			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
 
-
-			if(cmds_sce_debt)
-			{
-				B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
-
-				return cmd_parent;
-			}
-			else
-			{
-				return CR_SEMICOLON(cmd, NULL);
-			}
+			return cmd_parent;
 		}
 		else
 		{
-			SYNTAX_ERROR;
+			return CR_SEMICOLON(cmd, NULL);
 		}
+
 	}
 }
 
@@ -161,27 +131,23 @@ B_tree_node *get_func()
 	char *func_id = CUR_VAR;
 	id++;
 
-	if(CUR_TYPE == OPEN_BR)
-	{
-		PARSE_LOG("OPEN_BR ok.\n");
-		id++;
-	}
-	else
-	{
-		SYNTAX_ERROR;
-	}
+	SYNTAX_CHECK(CUR_TYPE == OPEN_BR);
 
 	B_tree_node *child = NULL;
 
 	if(IS_KEYWORD(func_id, "getvar"))
 	{
 		PARSE_LOG("Getting brace var.\n");
+
 		child = get_id();
+		CHECK_RET(child);
 	}
 	else if(IS_KEYWORD(func_id, "putexpr"))
 	{
 		PARSE_LOG("Getting brace expression.\n");
+		
 		child = get_add();
+		CHECK_RET(child);
 	}
 	else
 	{
@@ -191,48 +157,26 @@ B_tree_node *get_func()
 
 	CHECK_RET(child);
 
-	if(CUR_TYPE == CLOSE_BR)
-	{
-		PARSE_LOG("CLOSE_BR ok\n");
-		id++;
+	SYNTAX_CHECK(CUR_TYPE == CLOSE_BR);
 
-		return CR_FUNC(func_id, NULL, child);
-	}
-	else
-	{
-		SYNTAX_ERROR;
-	}
+	return CR_FUNC(func_id, NULL, child);
 }
 
 B_tree_node *get_cond(Node_type type)
 {
-	if(CUR_TYPE == OPEN_BR)
-	{
-		PARSE_LOG("OPEN_BR ok.\n");
-		id++;
 
-		PARSE_LOG("Getting brace expression.\n");
-		B_tree_node *br_expr = get_add();
-		CHECK_RET(br_expr);
+	SYNTAX_CHECK(CUR_TYPE == OPEN_BR);
 
-		if(CUR_TYPE == CLOSE_BR)
-		{
-			PARSE_LOG("CLOSE_BR ok\n");
-			id++;
+	PARSE_LOG("Getting brace expression.\n");
+	B_tree_node *br_expr = get_add();
+	CHECK_RET(br_expr);
 
-			B_tree_node *scope = get_scope();
+	SYNTAX_CHECK(CUR_TYPE == CLOSE_BR);
 
-			return CR_COND(type, br_expr, scope);
-		}
-		else
-		{
-			SYNTAX_ERROR;
-		}
-	}
-	else
-	{
-		SYNTAX_ERROR;
-	}
+	B_tree_node *scope = get_scope();
+	CHECK_RET(scope);
+
+	return CR_COND(type, br_expr, scope);
 }
 
 B_tree_node *get_ass()
@@ -240,14 +184,7 @@ B_tree_node *get_ass()
 	B_tree_node *var = get_id();
 	CHECK_RET(var);
 
-	if(CUR_TYPE == OP && CUR_OP == ASS)
-	{
-		id++;
-	}
-	else
-	{
-		SYNTAX_ERROR;
-	}
+	SYNTAX_CHECK(CUR_TYPE == OP && CUR_OP == ASS);
 
 	B_tree_node *expr = get_add();
 	CHECK_RET(expr);
@@ -321,7 +258,6 @@ B_tree_node *get_par()
 		CHECK_RET(val);
 
 		SYNTAX_CHECK(CUR_TYPE == CLOSE_BR);
-		id++;
 
 		return val;
 	}
@@ -364,41 +300,21 @@ B_tree_node *get_unary()
 
 	id++;
 
-	if(CUR_TYPE == OPEN_BR)
-	{
-		PARSE_LOG("OPEN_BR ok\n");
+	SYNTAX_CHECK(CUR_TYPE == OPEN_BR);
 
-		id++;
-		B_tree_node *child = get_add();
-		CHECK_RET(child);
+	B_tree_node *child = get_add();
+	CHECK_RET(child);
 
-		if(CUR_TYPE == CLOSE_BR)
-		{
-			PARSE_LOG("CLOSE_BR ok\n");
+	SYNTAX_CHECK(CUR_TYPE == CLOSE_BR);
 
-			id++;
-			if(false)
-			{
-				;
-			}
-			OP_CASE(SIN, "sin")
-			OP_CASE(COS, "cos")
-			OP_CASE(LN,  "ln")
-			OP_CASE(SQRT, "sqrt")
-			else
-			{
-				REPORT_ERROR("Uknown operation.\n");
-			}
-
-		}
-		else
-		{
-			SYNTAX_ERROR;
-		}
-	}
+	if(false);
+	OP_CASE(SIN, "sin")
+	OP_CASE(COS, "cos")
+	OP_CASE(LN,  "ln")
+	OP_CASE(SQRT, "sqrt")
 	else
 	{
-		SYNTAX_ERROR;
+		REPORT_ERROR("Uknown operation.\n");
 	}
 }
 
@@ -466,7 +382,9 @@ B_tree_node *get_all_scopes(bool manage_ccbrs, Node_type end_type)
 	while(CUR_TYPE != end_type)
 	{
 		B_tree_node *scope_end = move_scope_end(cur_node);
+
 		scope_end->right = get_scope();
+		CHECK_RET(scope_end->right);
 
 		cur_node = scope_end->right;
 	}
