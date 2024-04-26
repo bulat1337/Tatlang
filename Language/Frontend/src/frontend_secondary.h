@@ -48,13 +48,13 @@ Ops get_op(char sym, frd_err_t *error_code);
 
 frd_err_t add_id(Tokens *tokens, char *token);
 
-bool is_kwd(char *token, Node_type *type);
+bool is_kwd(char *token, Node_type *type, Node_value *value);
 
 void dump_tokens(Tokens *tokens);
 
 void log_op(Ops op);
 
-Node_type get_type(char *token);
+Node_type get_type(char *token, Node_value *value);
 
 char *get_symbs(const char *file_name, frd_err_t *error_code, size_t *file_len);
 
@@ -65,5 +65,7 @@ frd_err_t process_sym(char * *symbs_ptr, Tokens *tokens, size_t left_amount, boo
 frd_err_t process_op(char * *symbs_ptr, Tokens *tokens);
 
 frd_err_t process_id(char * *symbs_ptr, Tokens *tokens);
+
+void log_std_func(Std_func func_type);
 
 #endif

@@ -43,7 +43,7 @@ enum Node_type
 	SCOPE_END   = 11,
 	IF          = 12,
 	WHILE       = 13,
-	FUNC        = 14,
+	STD_FUNC    = 14,
 	UNR_OP      = 15,
 };
 
@@ -62,11 +62,18 @@ enum Ops
 	ASS        = 10,
 };
 
+enum Std_func
+{
+	GETVAR,
+	PUTEXPR,
+};
+
 struct Node_value
 {
 	double   num_value;
-	Ops op_value;
+	Ops      op_value;
 	char 	*var_value;
+	Std_func func;
 };
 
 struct B_tree_node
@@ -98,6 +105,7 @@ struct Node_charachteristics
 
 const size_t NODE_LABEL_STR_SIZE   = 100;
 const size_t OP_TOKEN_SIZE 		   = 15;
+const size_t STD_FUNC_TOKEN_SIZE   = 100;
 const size_t GR_DUMP_GEN_CMD_SIZE  = 100;
 const bool   RIGHT_CHILD           = true;
 const bool   LEFT_CHILD            = false;

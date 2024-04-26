@@ -83,9 +83,9 @@ B_tree_node *get_cmd()
 			return CR_SEMICOLON(cmd, NULL);
 		}
 	}
-	else if(CUR_TYPE == FUNC)
+	else if(CUR_TYPE == STD_FUNC)
 	{
-		PARSE_LOG("It's function.\n");
+		PARSE_LOG("It's standart function.\n");
 
 		cmd = get_func();
 		CHECK_RET(cmd);
@@ -128,30 +128,37 @@ B_tree_node *get_cmd()
 
 B_tree_node *get_func()
 {
-	char *func_id = CUR_VAR;
+	Std_func func_type = CUR_STD_FUNC;
 	id++;
 
 	SYNTAX_CHECK(CUR_TYPE == OPEN_BR);
 
 	B_tree_node *child = NULL;
 
-	if(IS_KEYWORD(func_id, "getvar"))
+	switch(func_type)
 	{
-		PARSE_LOG("Getting brace var.\n");
+		case GETVAR:
+		{
+			PARSE_LOG("Getting brace var.\n");
 
-		child = get_id();
-		CHECK_RET(child);
-	}
-	else if(IS_KEYWORD(func_id, "putexpr"))
-	{
-		PARSE_LOG("Getting brace expression.\n");
-		
-		child = get_add();
-		CHECK_RET(child);
-	}
-	else
-	{
-		SYNTAX_ERROR;
+			child = get_id();
+			CHECK_RET(child);
+
+			break;
+		}
+		case PUTEXPR:
+		{
+			PARSE_LOG("Getting brace expression.\n");
+
+			child = get_add();
+			CHECK_RET(child);
+
+			break;
+		}
+		default:
+		{
+			SYNTAX_ERROR;
+		}
 	}
 
 
@@ -159,7 +166,7 @@ B_tree_node *get_func()
 
 	SYNTAX_CHECK(CUR_TYPE == CLOSE_BR);
 
-	return CR_FUNC(func_id, NULL, child);
+	return CR_STD_FUNC(func_type, NULL, child);
 }
 
 B_tree_node *get_cond(Node_type type)
@@ -285,7 +292,7 @@ B_tree_node *get_par()
 }
 
 #define OP_CASE(op, name)					\
-	else if(IS_KEYWORD(op_name, name))			\
+	else if(IS_KEYWORD(op_name, name))		\
 	{										\
 		return CR_UNR_OP(op, NULL, child);	\
 	}										\
@@ -294,9 +301,9 @@ B_tree_node *get_unary()
 {
 	PARSE_LOG("%s log:\n", __func__);
 
-	char *op_name = CUR_VAR;
+	Ops operation = CUR_OP;
 
-	PARSE_LOG("Unary opertaion name: %s.\n", op_name);
+	PARSE_LOG("Unary opertaion: %d.\n", operation);
 
 	id++;
 
@@ -307,15 +314,7 @@ B_tree_node *get_unary()
 
 	SYNTAX_CHECK(CUR_TYPE == CLOSE_BR);
 
-	if(false);
-	OP_CASE(SIN, "sin")
-	OP_CASE(COS, "cos")
-	OP_CASE(LN,  "ln")
-	OP_CASE(SQRT, "sqrt")
-	else
-	{
-		REPORT_ERROR("Uknown operation.\n");
-	}
+	return CR_UNR_OP(operation, NULL, child);
 }
 
 B_tree_node *get_id()

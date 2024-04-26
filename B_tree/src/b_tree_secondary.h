@@ -32,4 +32,6 @@ char        *get_operation_token   (enum Ops op_type);
 
 bool         exists                (const char *file_name);
 
+char        *get_func_token         (Std_func func_type);
+
 #endif

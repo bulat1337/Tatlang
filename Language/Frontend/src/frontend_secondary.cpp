@@ -182,10 +182,11 @@ frd_err_t add_id(Tokens *tokens, char *token)
 {
 	frd_err_t error_code = FRD_ALL_GOOD;
 	Node_type type = VAR;
+	Node_value val = {.num_value = 0};
 
-	if(is_kwd(token, &type))
+	if(is_kwd(token, &type, &val))
 	{
-		CALL(add_token(tokens, type, {.var_value = token}));
+		CALL(add_token(tokens, type, val));
 	}
 	else
 	{
@@ -196,7 +197,7 @@ frd_err_t add_id(Tokens *tokens, char *token)
 	return error_code;
 }
 
-bool is_kwd(char *token, Node_type *type)
+bool is_kwd(char *token, Node_type *type, Node_value *value)
 {
 	FOR(size_t kwd_id = 0; kwd_id < kwds_amount; kwd_id++)
 	{
@@ -204,7 +205,7 @@ bool is_kwd(char *token, Node_type *type)
 		{
 			LOG("It's KEYWORD: %s\n", token);
 
-			*type = get_type(token);
+			*type = get_type(token, value);
 
 			return true;
 		}
@@ -247,16 +248,16 @@ void dump_tokens(Tokens *tokens)
 				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
-			case FUNC:
+			case STD_FUNC:
 			{
 				LOG("\tFUNC");
-				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				log_std_func(tokens->data[token_id].value.func);
 				break;
 			}
 			case UNR_OP:
 			{
 				LOG("\tUN_OP");
-				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				log_op(tokens->data[token_id].value.op_value);
 				break;
 			}
 			case SCOPE_START:
@@ -344,38 +345,75 @@ void log_op(Ops op)
 	}
 }
 
+void log_std_func(Std_func func_type)
+{
+	switch(func_type)
+	{
+		CASE(GETVAR)
+		CASE(PUTEXPR)
+		default:
+		{
+			LOG("UKNOWN STD_FUNC\n")
+		}
+	}
+}
+
 #include "undef_log_op_dsl.h"
 
 #define IS_KWD(check_kwd)\
 	!strncmp(token, check_kwd, LEN(check_kwd))
 
-Node_type get_type(char *token)
-{
-	if(IS_KWD("putexpr") || IS_KWD("getvar"))
-	{
-		LOG("It's func.\n");
+#define IF_UNR_OP(name, type)						\
+	else if(IS_KWD(name))							\
+	{												\
+		LOG("It's unary operation: %s.\n", name);	\
+		*value = {.op_value = type};				\
+													\
+		return UNR_OP;								\
+	}
 
-		return FUNC;
+Node_type get_type(char *token, Node_value *value)
+{
+
+	if(IS_KWD("putexpr"))
+	{
+		LOG("It's standart func: putexpr.\n");
+		*value = {.func =  PUTEXPR};
+
+		return STD_FUNC;
+	}
+	else if(IS_KWD("getvar"))
+	{
+		LOG("It's standart func: getvar.\n");
+		*value = {.func =  GETVAR};
+
+		return STD_FUNC;
 	}
 	else if(IS_KWD("while"))
 	{
 		LOG("It's while.\n");
+		*value = {.num_value = 0};
 
 		return WHILE;
 	}
 	else if(IS_KWD("if"))
 	{
 		LOG("It's if.\n");
+		*value = {.num_value = 0};
 
 		return IF;
 	}
+	IF_UNR_OP("sin",  SIN)
+	IF_UNR_OP("cos",  COS)
+	IF_UNR_OP("ln",   LN)
+	IF_UNR_OP("sqrt", SQRT)
 	else
 	{
-		LOG("It's unary operation.\n");
-
-		return UNR_OP;
+		LOG("%s: ERROR:\n\tKeyword could not be handled: %s.\n", __func__, token);
 	}
 }
+
+#undef IF_UNR_OP
 
 #include "def_get_sym_dsl.h"
 

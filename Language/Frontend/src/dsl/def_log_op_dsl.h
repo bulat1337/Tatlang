@@ -1,6 +1,6 @@
-#define CASE(op)			\
-	case op:				\
-	{						\
-		LOG("\t"#op"\n");	\
-		break;				\
+#define CASE(token)				\
+	case token:					\
+	{							\
+		LOG("\t"#token"\n");	\
+		break;					\
 	}

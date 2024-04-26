@@ -130,13 +130,23 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->left, node->right);
 			break;
 		}
-		case FUNC:
+		case STD_FUNC:
 		{
+			char *func_type = get_func_token(node->value.func);
+			if(func_type == NULL)
+			{
+				//log_error
+				return UNABLE_TO_ALLOCATE;
+			}
+
 			nd_description->color = SKY_BLUE;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: FUNC | val: %s} | {L: %p | R: %p}}",
-					node, node->value.var_value, node->left, node->right);
+					"{%p | {type: STD_FUNC | val: %s} | {L: %p | R: %p}}",
+					node, func_type, node->left, node->right);
+
+			free(func_type);
+
 			break;
 		}
 		case SEMICOLON:
@@ -355,9 +365,9 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 			DUMP("          WHILE");
 			break;
 		}
-		case FUNC:
+		case STD_FUNC:
 		{
-			DUMP("          FUNC");
+			DUMP("          STD_FUNC");
 			break;
 		}
 		case END:
@@ -486,4 +496,35 @@ bool exists(const char *file_name)
         return true;
     }
     return false;
+}
+
+char *get_func_token(Std_func func_type)
+{
+	#define CASE(func_type)										\
+	case func_type:												\
+	{															\
+		strncpy(func_token, #func_type, STD_FUNC_TOKEN_SIZE);	\
+		return func_token;										\
+		break;													\
+	}
+
+	char *func_token = (char *)calloc(STD_FUNC_TOKEN_SIZE, sizeof(char));
+	if(func_token == NULL)
+	{
+		return NULL;
+	}
+
+	switch(func_type)
+	{
+		CASE(GETVAR)
+		CASE(PUTEXPR)
+		default:
+		{
+			strncpy(func_token, "UNKNOWN", STD_FUNC_TOKEN_SIZE);
+			return func_token;
+			break;
+		}
+	}
+
+	#undef CASE
 }

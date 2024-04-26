@@ -27,25 +27,19 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 	switch(node->type)
 	{
-		case SEMICOLON:
-		{
-			ASMBL(node->left);
-			ASMBL(node->right);
-
-			break;
-		}
 		case SCOPE_START:
 		{
 			CALL(upgrade_n_table(nm_tbl_mngr));
-
-			ASMBL(node->left);
-			ASMBL(node->right);
-
-			break;
+			goto asmbl_children;
 		}
 		case SCOPE_END:
 		{
 			CALL(downgrade_n_table(nm_tbl_mngr));
+			goto asmbl_children;
+		}
+		case SEMICOLON:
+		{
+			asmbl_children:
 
 			ASMBL(node->left);
 			ASMBL(node->right);
@@ -64,21 +58,26 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 			break;
 		}
-		case FUNC:
+		case STD_FUNC:
 		{
-			if(IS_FUNC("getvar"))
+			switch(node->value.func)
 			{
-				write_getvar(node, asm_file, nm_tbl_mngr);
-			}
-			else if(IS_FUNC("putexpr"))
-			{
-				write_putexpr(node, asm_file, nm_tbl_mngr);
-			}
-			else
-			{
-				LOG("%s: ERROR:\n\tUnknown func.\n", __func__);
+				case GETVAR:
+				{
+					write_getvar(node, asm_file, nm_tbl_mngr);
+					break;
+				}
+				case PUTEXPR:
+				{
+					write_putexpr(node, asm_file, nm_tbl_mngr);
+					break;
+				}
+				default:
+				{
+					LOG("%s: ERROR:\n\tUnknown func.\n", __func__);
 
-				return BKD_UKNOWN_FUNC;
+					return BKD_UKNOWN_FUNC;
+				}
 			}
 
 			break;
@@ -108,38 +107,13 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 			break;
 		}
 		case KEYWORD:
-		{
-			LOG("%s: ERROR:\n\tNo KEYWORD allowed in the language tree.\n", __func__);
-
-			return BKD_INVALID_NODE;
-		}
 		case OPEN_BR:
-		{
-			LOG("%s: ERROR:\n\tNo OPEN_BR allowed in the language tree.\n", __func__);
-
-			return BKD_INVALID_NODE;
-		}
 		case CLOSE_BR:
-		{
-			LOG("%s: ERROR:\n\tNo CLOSE_BR allowed in the language tree.\n", __func__);
-
-			return BKD_INVALID_NODE;
-		}
 		case OPEN_CBR:
-		{
-			LOG("%s: ERROR:\n\tNo OPEN_CBR allowed in the language tree.\n", __func__);
-
-			return BKD_INVALID_NODE;
-		}
 		case CLOSE_CBR:
-		{
-			LOG("%s: ERROR:\n\tNo CLOSE_CBR allowed in the language tree.\n", __func__);
-
-			return BKD_INVALID_NODE;
-		}
 		case END:
 		{
-			LOG("%s: ERROR:\n\tNo END allowed in the language tree.\n", __func__);
+			LOG("%s: ERROR:\n\tInvalid node in the language tree: %d.\n", __func__, node->type);
 
 			return BKD_INVALID_NODE;
 		}
@@ -241,14 +215,14 @@ bkd_err_t write_op(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 			break;
 		}
-		CASE(ADD, "add")
-		CASE(SUB, "sub")
-		CASE(MUL, "mul")
-		CASE(DIV, "div")
-		CASE(POW, "pow")
-		CASE(LN, "ln")
-		CASE(SIN, "sin")
-		CASE(COS, "cos")
+		CASE(ADD,  "add")
+		CASE(SUB,  "sub")
+		CASE(MUL,  "mul")
+		CASE(DIV,  "div")
+		CASE(POW,  "pow")
+		CASE(LN,   "ln")
+		CASE(SIN,  "sin")
+		CASE(COS,  "cos")
 		CASE(SQRT, "sqrt")
 		case DO_NOTHING:
 		{

@@ -18,6 +18,9 @@ extern size_t id;
 #define CUR_VAR\
 	tokens->data[id].value.var_value
 
+#define CUR_STD_FUNC\
+	tokens->data[id].value.func
+
 #define CR_SEMICOLON(left_child, right_child)\
 	create_node(SEMICOLON, {.num_value = 0}, left_child, right_child).arg.node;
 
@@ -30,8 +33,8 @@ extern size_t id;
 #define CR_KEYWORD(val, left_child, right_child)\
 	create_node(KEYWORD, {.var_value = val}, left_child, right_child).arg.node;
 
-#define CR_FUNC(val, left_child, right_child)\
-	create_node(FUNC, {.var_value = val}, left_child, right_child).arg.node;
+#define CR_STD_FUNC(val, left_child, right_child)\
+	create_node(STD_FUNC, {.func = val}, left_child, right_child).arg.node;
 
 #define CR_ASS(left_child, right_child)\
 	create_node(OP, {.op_value = ASS}, left_child, right_child).arg.node;
