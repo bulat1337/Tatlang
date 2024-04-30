@@ -3,7 +3,26 @@
 
 #include "recursive_parser_secondary.h"
 
-static size_t sce_debt = 0;
+static size_t  sce_debt = 0;
+static Tokens *tokens   = NULL;
+static size_t  id       = 0;
+
+
+B_tree_node *get_general(Tokens *passed_tokens)
+{
+	id     = 0;
+	tokens = passed_tokens;
+
+	if(CUR_TYPE == END)
+	{
+		return CR_SEMICOLON(NULL, NULL);
+	}
+
+	B_tree_node *root = get_all_scopes(false, END);
+	CHECK_RET(root);
+
+	return root;
+}
 
 void rec_write_log(const char *file_name, const char *fmt, ...)
 {
@@ -87,10 +106,86 @@ B_tree_node *get_cmd()
 	{
 		PARSE_LOG("It's standart function.\n");
 
+		cmd = get_std_func();
+		CHECK_RET(cmd);
+
+		SYNTAX_CHECK(CUR_TYPE == SEMICOLON);
+
+		if(cmds_sce_debt)
+		{
+			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
+
+			return cmd_parent;
+		}
+		else
+		{
+			return CR_SEMICOLON(cmd, NULL);
+		}
+	}
+	else if(CUR_TYPE == FUNC)
+	{
+		PARSE_LOG("It's function.\n");
+
 		cmd = get_func();
 		CHECK_RET(cmd);
 
 		SYNTAX_CHECK(CUR_TYPE == SEMICOLON);
+
+		if(cmds_sce_debt)
+		{
+			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
+
+			return cmd_parent;
+		}
+		else
+		{
+			return CR_SEMICOLON(cmd, NULL);
+		}
+	}
+	else if(CUR_TYPE == DECLARE)
+	{
+		PARSE_LOG("It's function declaration.\n");
+
+		cmd = get_func_decl();
+		CHECK_RET(cmd);
+
+		if(cmds_sce_debt)
+		{
+			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
+
+			return cmd_parent;
+		}
+		else
+		{
+			return CR_SEMICOLON(cmd, NULL);
+		}
+	}
+	else if(CUR_TYPE == RETURN)
+	{
+		PARSE_LOG("It's return.\n");
+
+		cmd = get_return();
+		CHECK_RET(cmd);
+
+		SYNTAX_CHECK(CUR_TYPE == SEMICOLON);
+
+		if(cmds_sce_debt)
+		{
+			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
+
+			return cmd_parent;
+		}
+		else
+		{
+			return CR_SEMICOLON(cmd, NULL);
+		}
+	}
+	else if(CUR_TYPE == MAIN)
+	{
+		PARSE_LOG("It's main.\n");
+
+		cmd = get_main();
+		CHECK_RET(cmd);
 
 		if(cmds_sce_debt)
 		{
@@ -126,7 +221,85 @@ B_tree_node *get_cmd()
 	}
 }
 
+B_tree_node *get_main()
+{
+	SYNTAX_CHECK(CUR_TYPE == MAIN);
+
+	B_tree_node *body = get_scope();
+
+	return create_node(MAIN, {.num_value = 0}, NULL, body).arg.node;
+}
+
+B_tree_node *get_return()
+{
+	SYNTAX_CHECK(CUR_TYPE == RETURN);
+
+	B_tree_node *expr = get_add();
+
+	return create_node(RETURN, {.num_value = 0}, NULL, expr).arg.node;
+}
+
+B_tree_node *get_func_decl()
+{
+	SYNTAX_CHECK(CUR_TYPE == DECLARE);
+
+	B_tree_node *func_name = get_id();
+	CHECK_RET(func_name);
+
+	SYNTAX_CHECK(CUR_TYPE == OPEN_BR);
+
+	B_tree_node *arg = get_id();
+	CHECK_RET(arg);
+
+	B_tree_node *args = create_node(COMMA, {.num_value = 0}, arg, NULL).arg.node;
+
+	B_tree_node *cur_node = args;
+
+	while(CUR_TYPE != CLOSE_BR)
+	{
+		SYNTAX_CHECK(CUR_TYPE == COMMA);
+
+		arg = get_id();
+		cur_node->right = create_node(COMMA, {.num_value = 0}, arg, NULL).arg.node;
+
+		cur_node = cur_node->right;
+	}
+	id++;
+
+	B_tree_node *body = get_scope();
+
+	return create_node(FUNC_DECL, func_name->value, args, body).arg.node;
+}
+
 B_tree_node *get_func()
+{
+	B_tree_node *func_name = get_id();
+	CHECK_RET(func_name);
+
+	SYNTAX_CHECK(CUR_TYPE == OPEN_BR);
+
+	B_tree_node *expr = get_add();
+	CHECK_RET(expr);
+
+	B_tree_node *args = create_node(COMMA, {.num_value = 0}, expr, NULL).arg.node;
+
+	B_tree_node *cur_node = args;
+
+	while(CUR_TYPE != CLOSE_BR)
+	{
+		SYNTAX_CHECK(CUR_TYPE == COMMA);
+
+		expr = get_add();
+		cur_node->right = create_node(COMMA, {.num_value = 0}, expr, NULL).arg.node;
+
+		cur_node = cur_node->right;
+	}
+	id++;
+
+	return create_node(FUNC, func_name->value, args, NULL).arg.node;
+}
+
+B_tree_node *get_std_func()
 {
 	Std_func func_type = CUR_STD_FUNC;
 	id++;
@@ -212,6 +385,7 @@ B_tree_node *get_num()
 
 B_tree_node *get_add()
 {
+	PARSE_LOG("%s log:\n", __func__);
 	B_tree_node *val = get_mul();
 	CHECK_RET(val);
 
@@ -282,6 +456,13 @@ B_tree_node *get_par()
 
 		return val;
 	}
+	else if(CUR_TYPE == FUNC)
+	{
+		B_tree_node *val = get_func();
+		CHECK_RET(val);
+
+		return val;
+	}
 	else
 	{
 		B_tree_node *val = get_id();
@@ -290,12 +471,6 @@ B_tree_node *get_par()
 		return val;
 	}
 }
-
-#define OP_CASE(op, name)					\
-	else if(IS_KEYWORD(op_name, name))		\
-	{										\
-		return CR_UNR_OP(op, NULL, child);	\
-	}										\
 
 B_tree_node *get_unary()
 {

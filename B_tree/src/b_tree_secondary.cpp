@@ -112,6 +112,42 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
+		case MAIN:
+		{
+			nd_description->color = AGRESSIVE_RED;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: MAIN | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case FUNC:
+		{
+			nd_description->color = BLUE;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: FUNC | val: %s} | {L: %p | R: %p}}",
+					node, node->value.var_value, node->left, node->right);
+			break;
+		}
+		case FUNC_DECL:
+		{
+			nd_description->color = FOX_ORANGE;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: FUNC_DECL | val: %s} | {L: %p | R: %p}}",
+					node, node->value.var_value, node->left, node->right);
+			break;
+		}
+		case RETURN:
+		{
+			nd_description->color = GREEN;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: RETURN | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
 		case IF:
 		{
 			nd_description->color = MUSTARD_YELLOW;
@@ -158,6 +194,15 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->left, node->right);
 			break;
 		}
+		case COMMA:
+		{
+			nd_description->color = LIGHT_GREY;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: COMMA | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
 		case SCOPE_START:
 		{
 			nd_description->color = PURPLE;
@@ -182,6 +227,15 @@ error_t print_regular_nodes(struct B_tree_node *node,
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
 					"{%p | {type: OPEN_BR | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case DECLARE:
+		{
+			nd_description->color = NEUTRAL_GREY;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: DECLARE | val: -} | {L: %p | R: %p}}",
 					node, node->left, node->right);
 			break;
 		}
@@ -368,6 +422,26 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 		case STD_FUNC:
 		{
 			DUMP("          STD_FUNC");
+			break;
+		}
+		case FUNC:
+		{
+			DUMP("          FUNC");
+			break;
+		}
+		case COMMA:
+		{
+			DUMP("          COMMA");
+			break;
+		}
+		case DECLARE:
+		{
+			DUMP("          DECLARE");
+			break;
+		}
+		case RETURN:
+		{
+			DUMP("          RETURN");
 			break;
 		}
 		case END:

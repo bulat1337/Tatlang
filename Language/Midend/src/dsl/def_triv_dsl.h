@@ -63,6 +63,12 @@
 			(node->type == OP && node->value.op_value == SUB) &&	\
 			(!strncmp(LEFT_VAR, RIGHT_VAR, MAX_VAR_LEN))
 
+// #define SAME_OP_W_CONSTS	\
+// left or right is const
+// 	and the other one is op
+// 		and left or right of the op is the same op
+// 			and left or right child of the ops op is const
+
 #define ZERO													\
 	create_node(NUM, {.num_value = 0}, NULL, NULL).arg.node
 

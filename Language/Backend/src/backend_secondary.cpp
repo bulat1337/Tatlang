@@ -12,7 +12,7 @@
 	}
 
 #define IS_FUNC(kwd)\
-	!strncmp(node->value.var_value, kwd, LEN(kwd))
+	!strncmp(node->value.var_value, kwd, MAX_TOKEN_SIZE)
 
 static size_t label_ct = 0;
 
@@ -29,11 +29,13 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 	{
 		case SCOPE_START:
 		{
+			printf("its sc start\n");
 			CALL(upgrade_n_table(nm_tbl_mngr));
 			goto asmbl_children;
 		}
 		case SCOPE_END:
 		{
+			printf("its sc end\n");
 			CALL(downgrade_n_table(nm_tbl_mngr));
 			goto asmbl_children;
 		}
@@ -41,6 +43,7 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 		{
 			asmbl_children:
 
+			printf("SMC children next!\n");
 			ASMBL(node->left);
 			ASMBL(node->right);
 
@@ -82,8 +85,34 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 			break;
 		}
+		case FUNC:
+		{
+			CALL(write_func(node, asm_file, nm_tbl_mngr));
+
+			break;
+		}
+		case FUNC_DECL:
+		{
+			CALL(write_func_decl(node, asm_file));
+
+			break;
+		}
+		case RETURN:
+		{
+			printf("its return\n");
+			CALL(write_return(node, asm_file, nm_tbl_mngr));
+
+			break;
+		}
+		case MAIN:
+		{
+			CALL(write_main(node, asm_file));
+
+			break;
+		}
 		case OP:
 		{
+			printf("It's op: %d[%p]\n", node->value.op_value, node);
 			CALL(write_op(node, asm_file, nm_tbl_mngr));
 
 			break;
@@ -106,6 +135,8 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 			break;
 		}
+		case DECLARE:
+		case COMMA:
 		case KEYWORD:
 		case OPEN_BR:
 		case CLOSE_BR:
@@ -127,6 +158,52 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 	return error_code;
 }
+
+bkd_err_t write_func(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
+{
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
+	CALL(push_all(nm_tbl_mngr, asm_file));
+
+	B_tree_node *cur_node = node->left;
+
+
+	size_t arg_counter = 0;
+
+	while(cur_node != NULL)
+	{
+		ASMBL(cur_node->left);
+
+		char *loc = get_loc_in_order(arg_counter, &error_code);
+		arg_counter++;
+
+		cur_node = cur_node->right;
+	}
+
+	for(size_t arg_id = arg_counter; arg_id >= 1; arg_id--)
+	{
+		char *loc = get_loc_in_order(arg_id, &error_code);
+		WRITE_ASM("pop %s\n", loc);
+	}
+
+	WRITE_ASM("call %s\n", node->value.var_value);
+
+	// pops all exept return register (wich is rax)
+	CALL(pop_all(nm_tbl_mngr, asm_file));
+
+
+	char *exch_reg = get_loc("temp_exch", nm_tbl_mngr, true, &error_code);
+
+	WRITE_ASM("pop %s\n", exch_reg);
+	WRITE_ASM("push rax\n");
+	WRITE_ASM("push %s\n", exch_reg);
+	WRITE_ASM("pop rax\n");
+
+
+	return error_code;
+}
+
+
 
 bkd_err_t write_getvar(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 {
@@ -226,7 +303,7 @@ bkd_err_t write_op(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 		CASE(SQRT, "sqrt")
 		case DO_NOTHING:
 		{
-			LOG("%s: ERROR:\n\tInvalid operation.\n", __func__);
+			LOG("%s: ERROR:\n\tInvalid operation: %d\n", __func__, node->value.op_value);
 			return BKD_UNKNOWN_OPERATION;
 		}
 		default:
@@ -258,6 +335,21 @@ bkd_err_t write_while(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mng
 
 	WRITE_ASM("jmp while_%lu\n", while_id);
 	WRITE_ASM(":break_%lu\n", while_id);
+
+	return error_code;
+}
+
+bkd_err_t write_main(B_tree_node *node, FILE *asm_file)
+{
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
+	Nm_tbl_mngr nm_tbl_mngr = {};
+	init_name_tables(&nm_tbl_mngr);
+	nm_tbl_mngr.in_func_start = true;
+
+	WRITE_ASM(":main\n")
+
+	asmbl(node->right, asm_file, &nm_tbl_mngr);
 
 	return error_code;
 }
@@ -325,6 +417,16 @@ bkd_err_t upgrade_n_table(Nm_tbl_mngr *nm_tbl_mngr)
 {
 	LOG("Upgrade in progress.\n");
 
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
+	if(nm_tbl_mngr->in_func_start == true)
+	{
+		LOG("Manager in func start. Not upgrating.\n");
+
+		nm_tbl_mngr->in_func_start = false;
+		return error_code;
+	}
+
 	CUR_LVL++;
 
 	REALLOC(nm_tbl_mngr->name_tables, CUR_LVL + 1, Name_table);
@@ -336,12 +438,21 @@ bkd_err_t upgrade_n_table(Nm_tbl_mngr *nm_tbl_mngr)
 
 	LOG("Successful upgrade.\n");
 
-	return BKD_ALL_GOOD;
+	return error_code;
 }
 
 bkd_err_t downgrade_n_table(Nm_tbl_mngr *nm_tbl_mngr)
 {
 	LOG("Downgrade in progress.\n");
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
+	if(CUR_LVL == 0)
+	{
+		LOG("Trying to downgrade 0 lvl manager. Destroying it.\n");
+		CALL(dtor_name_tables(nm_tbl_mngr));
+
+		return error_code;
+	}
 
 	CUR_TABLE.capacity = 0;
 	CUR_TABLE.size     = 0;
@@ -354,7 +465,7 @@ bkd_err_t downgrade_n_table(Nm_tbl_mngr *nm_tbl_mngr)
 
 	LOG("Successful downgrade.\n");
 
-	return BKD_ALL_GOOD;
+	return error_code;
 }
 
 bkd_err_t dtor_name_tables(Nm_tbl_mngr *nm_tbl_mngr)
@@ -381,7 +492,7 @@ bkd_err_t dtor_name_tables(Nm_tbl_mngr *nm_tbl_mngr)
 }
 
 #define IS_VAR(table_name)\
-	!strncmp(table_name, var, strlen(var))
+	!strncmp(table_name, var, MAX_TOKEN_SIZE)
 
 #define NAME_TABLE\
 	nm_tbl_mngr->name_tables[lvl_id]
@@ -398,9 +509,6 @@ bkd_err_t dtor_name_tables(Nm_tbl_mngr *nm_tbl_mngr)
 
 char *get_loc(char *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag, bkd_err_t *error_code)
 {
-	char *loc = NULL;
-	CALLOC(loc, LOC_SIZE, char);
-
 	size_t overall_size = 0;
 
 	for(long lvl_id = (long)CUR_LVL; lvl_id >= 0; lvl_id--)
@@ -411,75 +519,199 @@ char *get_loc(char *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag, bkd_err_t *er
 		{
 			if(IS_VAR(NAME_TABLE.cells[cell_id].name))
 			{
+				char *loc = get_init_var(&(NAME_TABLE.cells[cell_id]), error_code);
 
-				switch(NAME_TABLE.cells[cell_id].type)
-				{
-					case REG:
-					{
-						snprintf(loc, LOC_SIZE - 1, "r%cx",
-								 NAME_TABLE.cells[cell_id].loc.reg_id + 'a');
-
-						return loc;
-					}
-					case RAM:
-					{
-						snprintf(loc, LOC_SIZE - 1, "[%lu]",
-								 NAME_TABLE.cells[cell_id].loc.RAM_address);
-
-						return loc;
-					}
-					default:
-					{
-						free(loc);
-
-						*error_code = BKD_UNKNOWN_VAR;
-						return NULL;
-					}
-				}
+				return loc;
 			}
 		}
 	}
 
 	if(init_flag)
 	{
-		if(CUR_TABLE.size >= CUR_TABLE.capacity)
-		{
-			CUR_TABLE.capacity *= REALLOC_COEFF;
-			REALLOC(CUR_TABLE.cells, CUR_TABLE.capacity, Table_cell)
-			LOG("Cells reallocated.\n");
-		}
-
-		CUR_TABLE.cells[CUR_TABLE.size].name            = var;
-
-		if(overall_size >= AMOUNT_OF_REGS)
-		{
-			CUR_TABLE.cells[CUR_TABLE.size].type            = RAM;
-			CUR_TABLE.cells[CUR_TABLE.size].loc.RAM_address = overall_size - AMOUNT_OF_REGS;
-
-			snprintf(loc, LOC_SIZE - 1, "[%lu]",
-						CUR_TABLE.cells[CUR_TABLE.size].loc.RAM_address);
-		}
-		else
-		{
-			CUR_TABLE.cells[CUR_TABLE.size].type       = REG;
-			CUR_TABLE.cells[CUR_TABLE.size].loc.reg_id = (unsigned char)overall_size;
-
-			snprintf(loc, LOC_SIZE - 1, "r%cx",
-						CUR_TABLE.cells[CUR_TABLE.size].loc.reg_id + 'a');
-		}
-
-		CUR_TABLE.size++;
-
+		char *loc = init_var(var, &(CUR_TABLE), error_code, overall_size);
 
 		return loc;
-
 	}
 	else
 	{
-		free(loc);
 		return NULL;
 	}
 }
 
+char *get_loc_in_order(size_t arg_counter, bkd_err_t *error_code)
+{
+	char *loc = NULL;
+	CALLOC(loc, LOC_SIZE, char);
+
+	if(arg_counter >= AMOUNT_OF_REGS)
+	{
+		snprintf(loc, LOC_SIZE - 1, "[%lu]", arg_counter - AMOUNT_OF_REGS);
+	}
+	else
+	{
+		snprintf(loc, LOC_SIZE - 1, "r%cx", (char)arg_counter + 'a');
+	}
+
+	return loc;
+}
+
+char *get_init_var(Table_cell *cell, bkd_err_t *error_code)
+{
+	char *loc = NULL;
+	CALLOC(loc, LOC_SIZE, char);
+
+	switch(cell->type)
+	{
+		case REG:
+		{
+			snprintf(loc, LOC_SIZE - 1, "r%cx", cell->loc.reg_id + 'a');
+
+			return loc;
+		}
+		case RAM:
+		{
+			snprintf(loc, LOC_SIZE - 1, "[%lu]", cell->loc.RAM_address);
+
+			return loc;
+		}
+		default:
+		{
+			free(loc);
+			*error_code = BKD_UNKNOWN_VAR;
+			return NULL;
+		}
+	}
+}
+
+char *init_var(char *var, struct Name_table *cur_table,
+			   bkd_err_t *error_code, size_t overall_size)
+{
+	char *loc = NULL;
+	CALLOC(loc, LOC_SIZE, char);
+
+	if(cur_table->size >= cur_table->capacity)
+	{
+		cur_table->capacity *= REALLOC_COEFF;
+		REALLOC(cur_table->cells, cur_table->capacity, Table_cell)
+		LOG("Cells reallocated.\n");
+	}
+
+	cur_table->cells[cur_table->size].name = var;
+
+	if(overall_size >= AMOUNT_OF_REGS)
+	{
+		cur_table->cells[cur_table->size].type            = RAM;
+		cur_table->cells[cur_table->size].loc.RAM_address = overall_size - AMOUNT_OF_REGS;
+
+		snprintf(loc, LOC_SIZE - 1, "[%lu]",
+					cur_table->cells[cur_table->size].loc.RAM_address);
+	}
+	else
+	{
+		cur_table->cells[cur_table->size].type       = REG;
+		cur_table->cells[cur_table->size].loc.reg_id = (unsigned char)overall_size;
+
+		snprintf(loc, LOC_SIZE - 1, "r%cx",
+					cur_table->cells[cur_table->size].loc.reg_id + 'a');
+	}
+
+	cur_table->size++;
+
+
+	return loc;
+}
+
+bkd_err_t push_all(Nm_tbl_mngr *nm_tbl_mngr, FILE *asm_file)
+{
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
+	for(long lvl_id = (long)CUR_LVL; lvl_id >= 0; lvl_id--)
+	{
+		for(size_t cell_id = 0; cell_id < NAME_TABLE.size; cell_id++)
+		{
+			char *loc = get_init_var(&(NAME_TABLE.cells[cell_id]), &error_code);
+
+			WRITE_ASM("push %s\n", loc);
+		}
+	}
+
+	return error_code;
+}
+
+bkd_err_t pop_all(Nm_tbl_mngr *nm_tbl_mngr, FILE *asm_file)
+{
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
+	for(long lvl_id = 0; lvl_id <= (long)CUR_LVL; lvl_id++)
+	{
+		for(long cell_id = (long)NAME_TABLE.size - 1; cell_id >= 0; cell_id--)
+		{
+			char *loc = get_init_var(&(NAME_TABLE.cells[cell_id]), &error_code);
+
+			if(!(cell_id == 0 && lvl_id == 0))
+			{
+				WRITE_ASM("pop %s\n", loc);
+			}
+		}
+	}
+
+	return  error_code;
+}
+
 #undef NAME_TABLE
 #undef IS_VAR
+
+#undef CUR_TABLE
+#undef CUR_LVL
+
+
+#define CUR_LVL\
+	nm_tbl_mngr.cur_lvl
+
+#define CUR_TABLE\
+	nm_tbl_mngr.name_tables[CUR_LVL]
+
+
+bkd_err_t write_func_decl(B_tree_node *node, FILE *asm_file)
+{
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
+
+	Nm_tbl_mngr nm_tbl_mngr = {};
+	init_name_tables(&nm_tbl_mngr);
+	nm_tbl_mngr.in_func_start = true;
+
+	B_tree_node *cur_node = node->left;
+
+	size_t arg_counter = 1;
+
+	while(cur_node != NULL)
+	{
+		printf("initning.\n");
+		init_var(cur_node->left->value.var_value, &(CUR_TABLE), &error_code, arg_counter);
+		arg_counter++;
+
+		cur_node = cur_node->right;
+	}
+
+	printf("args inited succcc\n");
+
+	WRITE_ASM(":%s\n", node->value.var_value);
+
+	asmbl(node->right, asm_file, &nm_tbl_mngr);
+
+	return error_code;
+}
+
+bkd_err_t write_return(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
+{
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
+	ASMBL(node->right);
+
+	WRITE_ASM("pop rax\n");
+
+	WRITE_ASM("ret\n");
+
+	return error_code;
+}

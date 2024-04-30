@@ -39,6 +39,7 @@ struct Nm_tbl_mngr
 {
 	size_t cur_lvl;
 	Name_table *name_tables;
+	bool in_func_start;
 };
 
 
@@ -71,6 +72,10 @@ struct Nm_tbl_mngr
 		return BKD_UNABLE_TO_ALLOCATE;						\
 	}
 
+#define CHECK_ERROR													\
+	if(error_code != BKD_ALL_GOOD)									\
+		return error_code;
+
 void      write_num        (double num, FILE *asm_file);
 
 bkd_err_t asmbl            (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
@@ -96,8 +101,27 @@ bkd_err_t dtor_name_tables (Nm_tbl_mngr *nm_tbl_mngr);
 char     *get_loc          (char *var, Nm_tbl_mngr *nm_tbl_mngr,
 							bool init_flag, bkd_err_t *error_code);
 
-bkd_err_t write_getvar(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+bkd_err_t write_getvar     (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
 
-bkd_err_t write_putexpr(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+bkd_err_t write_putexpr    (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+
+char     *init_var         (char *var, struct Name_table *cur_table,
+			                bkd_err_t *error_code, size_t overall_size);
+
+char     *get_init_var     (Table_cell *cell, bkd_err_t *error_code);
+
+bkd_err_t write_func_decl  (B_tree_node *node, FILE *asm_file);
+
+bkd_err_t write_return     (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+
+bkd_err_t write_main       (B_tree_node *node, FILE *asm_file);
+
+bkd_err_t push_all         (Nm_tbl_mngr *nm_tbl_mngr, FILE *asm_file);
+
+bkd_err_t write_func       (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+
+char     *get_loc_in_order (size_t arg_counter, bkd_err_t *error_code);
+
+bkd_err_t pop_all          (Nm_tbl_mngr *nm_tbl_mngr, FILE *asm_file);
 
 #endif

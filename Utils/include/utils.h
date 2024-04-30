@@ -58,6 +58,7 @@
 													\
 	fclose(file_ptr);
 
+const size_t MAX_TOKEN_SIZE              = 256;
 static size_t  GLOBAL_CYCLE_COUNTER      = 0; /**< Global counter for loop iterations. */
 const  size_t  CYCLE_LIMIT               = 10000; /**< Limit for loop iterations. */
 

@@ -3,9 +3,6 @@
 
 #include "recursive_parser.h"
 
-extern Tokens *tokens;
-extern size_t id;
-
 #define CUR_TYPE\
 	tokens->data[id].type
 
@@ -54,9 +51,6 @@ extern size_t id;
 #define CR_SCOPE_START(left_child, right_child)\
 	create_node(SCOPE_START, {.num_value = 0}, left_child, right_child).arg.node;
 
-#define IS_KEYWORD(var, check_keyword)\
-	!strncmp(var, check_keyword, LEN(check_keyword))
-
 #define SYNTAX_CHECK(cond)													\
 	if(!(cond))																\
 	{																		\
@@ -87,9 +81,11 @@ extern size_t id;
 
 void         rec_write_log  (const char *file_name, const char *fmt, ...);
 
+B_tree_node *get_general    (Tokens *passed_tokens);
+
 B_tree_node *get_cmd        ();
 
-B_tree_node *get_func       ();
+B_tree_node *get_std_func       ();
 
 B_tree_node *get_cond       (Node_type type);
 
@@ -110,6 +106,14 @@ B_tree_node *get_pow        ();
 B_tree_node *get_scope      ();
 
 B_tree_node *get_unary      ();
+
+B_tree_node *get_func       ();
+
+B_tree_node *get_func_decl  ();
+
+B_tree_node *get_return     ();
+
+B_tree_node *get_main       ();
 
 B_tree_node *move_scope_end (B_tree_node *root);
 

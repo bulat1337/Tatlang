@@ -3,7 +3,7 @@
 
 #include "frontend.h"
 
-const size_t kwds_amount = 8;
+const size_t kwds_amount = 11;
 
 const char * const kwds[] =
 {
@@ -15,13 +15,13 @@ const char * const kwds[] =
 	"sqrt",
 	"getvar",
 	"putexpr",
+	"declare",
+	"return",
+	"main",
 };
 
 const size_t STARTER_TOKENS_AMOUNT = 5;
 const int    POISON_OP             = -666;
-
-#define MAX_TOKEN_SIZE\
-	256
 
 #define LOG(...)\
 	frd_write_log("frontend_log", __VA_ARGS__);
@@ -46,7 +46,7 @@ frd_err_t add_token(Tokens *tokens, Node_type type, Node_value value);
 
 Ops get_op(char sym, frd_err_t *error_code);
 
-frd_err_t add_id(Tokens *tokens, char *token);
+frd_err_t add_id(Tokens *tokens, char *token, bool is_func);
 
 bool is_kwd(char *token, Node_type *type, Node_value *value);
 

@@ -45,6 +45,12 @@ enum Node_type
 	WHILE       = 13,
 	STD_FUNC    = 14,
 	UNR_OP      = 15,
+	FUNC        = 16,
+	DECLARE     = 17,
+	RETURN      = 18,
+	COMMA       = 19,
+	FUNC_DECL   = 20,
+	MAIN        = 21,
 };
 
 enum Ops
@@ -124,6 +130,12 @@ const char * const MUSTARD_YELLOW  = "#C4B500";
 const char * const LIGHT_YELLOW    = "#FFE438";
 const char * const SKY_BLUE        = "#5AD5FF";
 const char * const RASPBERRIE_PINK = "#C40062";
+const char * const BLUE            = "#0060CB";
+const char * const GREEN           = "#009239";
+const char * const FOX_ORANGE      = "#C86502";
+const char * const LIGHT_GREY      = "#CDCDCD";
+
+
 
 
 

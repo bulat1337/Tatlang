@@ -178,7 +178,7 @@ Ops get_op(char sym, frd_err_t *error_code)
 	}
 }
 
-frd_err_t add_id(Tokens *tokens, char *token)
+frd_err_t add_id(Tokens *tokens, char *token, bool is_func)
 {
 	frd_err_t error_code = FRD_ALL_GOOD;
 	Node_type type = VAR;
@@ -187,6 +187,11 @@ frd_err_t add_id(Tokens *tokens, char *token)
 	if(is_kwd(token, &type, &val))
 	{
 		CALL(add_token(tokens, type, val));
+	}
+	else if(is_func)
+	{
+		LOG("It's func.\n");
+		CALL(add_token(tokens, FUNC, {.var_value = token}));
 	}
 	else
 	{
@@ -201,7 +206,7 @@ bool is_kwd(char *token, Node_type *type, Node_value *value)
 {
 	FOR(size_t kwd_id = 0; kwd_id < kwds_amount; kwd_id++)
 	{
-		if(!strncmp(token, kwds[kwd_id], strlen(token)))
+		if(!strncmp(token, kwds[kwd_id], MAX_TOKEN_SIZE))
 		{
 			LOG("It's KEYWORD: %s\n", token);
 
@@ -244,13 +249,19 @@ void dump_tokens(Tokens *tokens)
 			}
 			case KEYWORD:
 			{
-				LOG("\tKWD");
+				LOG("\tKEYWORD");
+				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				break;
+			}
+			case FUNC:
+			{
+				LOG("\tFUNC");
 				LOG("\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
 			case STD_FUNC:
 			{
-				LOG("\tFUNC");
+				LOG("\tSTD_FUNC");
 				log_std_func(tokens->data[token_id].value.func);
 				break;
 			}
@@ -307,6 +318,26 @@ void dump_tokens(Tokens *tokens)
 				LOG("\tSEMICOLON\n");
 				break;
 			}
+			case MAIN:
+			{
+				LOG("\tMAIN\n");
+				break;
+			}
+			case RETURN:
+			{
+				LOG("\tRETURN\n");
+				break;
+			}
+			case DECLARE:
+			{
+				LOG("\tDECLARE\n");
+				break;
+			}
+			case COMMA:
+			{
+				LOG("\tCOMMA\n");
+				break;
+			}
 			case END:
 			{
 				LOG("\tEND\n");
@@ -361,7 +392,7 @@ void log_std_func(Std_func func_type)
 #include "undef_log_op_dsl.h"
 
 #define IS_KWD(check_kwd)\
-	!strncmp(token, check_kwd, LEN(check_kwd))
+	!strncmp(token, check_kwd, MAX_TOKEN_SIZE)
 
 #define IF_UNR_OP(name, type)						\
 	else if(IS_KWD(name))							\
@@ -375,7 +406,14 @@ void log_std_func(Std_func func_type)
 Node_type get_type(char *token, Node_value *value)
 {
 
-	if(IS_KWD("putexpr"))
+	if(IS_KWD("main"))
+	{
+		LOG("It's main.\n");
+		*value = {.num_value = 0};
+
+		return MAIN;
+	}
+	else if(IS_KWD("putexpr"))
 	{
 		LOG("It's standart func: putexpr.\n");
 		*value = {.func =  PUTEXPR};
@@ -403,6 +441,20 @@ Node_type get_type(char *token, Node_value *value)
 
 		return IF;
 	}
+	else if(IS_KWD("declare"))
+	{
+		LOG("It's declare.\n");
+		*value = {.num_value = 0};
+
+		return DECLARE;
+	}
+	else if(IS_KWD("return"))
+	{
+		LOG("It's return.\n");
+		*value = {.num_value = 0};
+
+		return RETURN;
+	}
 	IF_UNR_OP("sin",  SIN)
 	IF_UNR_OP("cos",  COS)
 	IF_UNR_OP("ln",   LN)
@@ -410,6 +462,8 @@ Node_type get_type(char *token, Node_value *value)
 	else
 	{
 		LOG("%s: ERROR:\n\tKeyword could not be handled: %s.\n", __func__, token);
+
+		return NUM;
 	}
 }
 
@@ -480,6 +534,7 @@ frd_err_t process_sym(char * *symbs_ptr, Tokens *tokens, size_t left_amount, boo
 		CASE('{', OPEN_CBR)
 		CASE('}', CLOSE_CBR)
 		CASE(';', SEMICOLON)
+		CASE(',', COMMA)
 		case '#':
 		{
 			LOG("Skipping comment.\n");
@@ -518,13 +573,24 @@ frd_err_t process_id(char * *symbs_ptr, Tokens *tokens)
 
 	int amount = 0;
 
-	sscanf((*symbs_ptr), "%[a-zA-Z0-9,_,$]%n", token, &amount);
+	sscanf((*symbs_ptr), "%[a-zA-Z0-9_$]%n", token, &amount);
+
+	(*symbs_ptr) += amount;
+
+	bool is_func = false;
+
+	if(*(*symbs_ptr) == '(')
+	{
+		LOG("Next one after %s is %c so it's function type token\n",
+			 token, *(*symbs_ptr));
+
+		is_func = true;
+	}
 
 	LOG("\ttoken: %s\n", token);
 
-	CALL(add_id(tokens, token));
+	CALL(add_id(tokens, token, is_func));
 
-	(*symbs_ptr) += amount;
 
 	return error_code;
 }

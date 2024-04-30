@@ -15,7 +15,7 @@ B_tree_node *simplify(B_tree_node *root, mid_err_t *error_code)
 	root->right = simplify(root->right, error_code);
 
 	root = fold_consts(root, error_code);
-	root = solve_trivial(root);
+	root = solve_trivial_expr(root);
 
 	return root;
 }
@@ -143,7 +143,7 @@ btr_elem_t eval(B_tree_node *node, mid_err_t *error_code)
 
 #include "def_triv_dsl.h"
 
-B_tree_node *solve_trivial(B_tree_node *node)
+B_tree_node *solve_trivial_expr(B_tree_node *node)
 {
 	if(node == NULL)
 	{
@@ -217,13 +217,7 @@ B_tree_node *solve_trivial(B_tree_node *node)
 		change_flag = true;
 		return ZERO;
 	}
-// 	else if(SAME_OP_W_CONSTS)
-//
-// 	#define SAME_OP_W_CONSTS\
-// 	left or right is const
-// 		and the other one is op
-// 			and left or right of the op is the same op
-// 				and left or right child of the ops op is const
+
 
 
 	return node;
