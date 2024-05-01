@@ -107,7 +107,7 @@ B_tree_node *get_scope      ();
 
 B_tree_node *get_unary      ();
 
-B_tree_node *get_func       ();
+B_tree_node *get_func       (bool cmd_func);
 
 B_tree_node *get_func_decl  ();
 

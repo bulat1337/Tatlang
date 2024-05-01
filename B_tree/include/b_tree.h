@@ -51,6 +51,7 @@ enum Node_type
 	COMMA       = 19,
 	FUNC_DECL   = 20,
 	MAIN        = 21,
+	CMD_FUNC    = 22,
 };
 
 enum Ops

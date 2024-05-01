@@ -130,6 +130,15 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
+		case CMD_FUNC:
+		{
+			nd_description->color = BLUE;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: CMD_FUNC | val: %s} | {L: %p | R: %p}}",
+					node, node->value.var_value, node->left, node->right);
+			break;
+		}
 		case FUNC_DECL:
 		{
 			nd_description->color = FOX_ORANGE;
@@ -427,6 +436,11 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 		case FUNC:
 		{
 			DUMP("          FUNC");
+			break;
+		}
+		case CMD_FUNC:
+		{
+			DUMP("          CMD_FUNC");
 			break;
 		}
 		case COMMA:

@@ -126,7 +126,7 @@ B_tree_node *get_cmd()
 	{
 		PARSE_LOG("It's function.\n");
 
-		cmd = get_func();
+		cmd = get_func(true);
 		CHECK_RET(cmd);
 
 		SYNTAX_CHECK(CUR_TYPE == SEMICOLON);
@@ -271,7 +271,7 @@ B_tree_node *get_func_decl()
 	return create_node(FUNC_DECL, func_name->value, args, body).arg.node;
 }
 
-B_tree_node *get_func()
+B_tree_node *get_func(bool cmd_func = false)
 {
 	B_tree_node *func_name = get_id();
 	CHECK_RET(func_name);
@@ -296,7 +296,14 @@ B_tree_node *get_func()
 	}
 	id++;
 
-	return create_node(FUNC, func_name->value, args, NULL).arg.node;
+	if(cmd_func)
+	{
+		return create_node(CMD_FUNC, func_name->value, args, NULL).arg.node;
+	}
+	else
+	{
+		return create_node(FUNC, func_name->value, args, NULL).arg.node;
+	}
 }
 
 B_tree_node *get_std_func()

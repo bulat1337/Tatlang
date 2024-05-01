@@ -29,13 +29,11 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 	{
 		case SCOPE_START:
 		{
-			printf("its sc start\n");
 			CALL(upgrade_n_table(nm_tbl_mngr));
 			goto asmbl_children;
 		}
 		case SCOPE_END:
 		{
-			printf("its sc end\n");
 			CALL(downgrade_n_table(nm_tbl_mngr));
 			goto asmbl_children;
 		}
@@ -43,7 +41,6 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 		{
 			asmbl_children:
 
-			printf("SMC children next!\n");
 			ASMBL(node->left);
 			ASMBL(node->right);
 
@@ -86,6 +83,7 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 			break;
 		}
 		case FUNC:
+		case CMD_FUNC:
 		{
 			CALL(write_func(node, asm_file, nm_tbl_mngr));
 
@@ -99,7 +97,6 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 		}
 		case RETURN:
 		{
-			printf("its return\n");
 			CALL(write_return(node, asm_file, nm_tbl_mngr));
 
 			break;
@@ -112,7 +109,6 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 		}
 		case OP:
 		{
-			printf("It's op: %d[%p]\n", node->value.op_value, node);
 			CALL(write_op(node, asm_file, nm_tbl_mngr));
 
 			break;
@@ -191,13 +187,19 @@ bkd_err_t write_func(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr
 	// pops all exept return register (wich is rax)
 	CALL(pop_all(nm_tbl_mngr, asm_file));
 
+	if(node->type == FUNC)
+	{
+		char *exch_reg = get_loc("_temp_exch", nm_tbl_mngr, true, &error_code);
 
-	char *exch_reg = get_loc("temp_exch", nm_tbl_mngr, true, &error_code);
-
-	WRITE_ASM("pop %s\n", exch_reg);
-	WRITE_ASM("push rax\n");
-	WRITE_ASM("push %s\n", exch_reg);
-	WRITE_ASM("pop rax\n");
+		WRITE_ASM("pop %s\n", exch_reg);
+		WRITE_ASM("push rax\n");
+		WRITE_ASM("push %s\n", exch_reg);
+		WRITE_ASM("pop rax\n");
+	}
+	else
+	{
+		WRITE_ASM("pop rax\n");
+	}
 
 
 	return error_code;
@@ -526,6 +528,7 @@ char *get_loc(char *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag, bkd_err_t *er
 		}
 	}
 
+
 	if(init_flag)
 	{
 		char *loc = init_var(var, &(CUR_TABLE), error_code, overall_size);
@@ -683,22 +686,23 @@ bkd_err_t write_func_decl(B_tree_node *node, FILE *asm_file)
 
 	B_tree_node *cur_node = node->left;
 
+	init_var("_ret_var", &(CUR_TABLE), &error_code, 0);
 	size_t arg_counter = 1;
+
 
 	while(cur_node != NULL)
 	{
-		printf("initning.\n");
 		init_var(cur_node->left->value.var_value, &(CUR_TABLE), &error_code, arg_counter);
 		arg_counter++;
 
 		cur_node = cur_node->right;
 	}
 
-	printf("args inited succcc\n");
-
 	WRITE_ASM(":%s\n", node->value.var_value);
 
 	asmbl(node->right, asm_file, &nm_tbl_mngr);
+
+	WRITE_ASM("ret\n");
 
 	return error_code;
 }
@@ -710,8 +714,6 @@ bkd_err_t write_return(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mn
 	ASMBL(node->right);
 
 	WRITE_ASM("pop rax\n");
-
-	WRITE_ASM("ret\n");
 
 	return error_code;
 }
