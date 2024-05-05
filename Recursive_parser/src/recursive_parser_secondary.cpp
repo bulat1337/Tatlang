@@ -92,16 +92,7 @@ B_tree_node *get_cmd()
 		cmd = get_cond(cond_type);
 		CHECK_RET(cmd);
 
-		if(cmds_sce_debt)
-		{
-			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
-
-			return cmd_parent;
-		}
-		else
-		{
-			return CR_SEMICOLON(cmd, NULL);
-		}
+		PAY_CMD_DEBT;;
 	}
 	else if(CUR_TYPE == STD_FUNC)
 	{
@@ -112,16 +103,7 @@ B_tree_node *get_cmd()
 
 		SYNTAX_CHECK(CUR_TYPE == SEMICOLON);
 
-		if(cmds_sce_debt)
-		{
-			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
-
-			return cmd_parent;
-		}
-		else
-		{
-			return CR_SEMICOLON(cmd, NULL);
-		}
+		PAY_CMD_DEBT;;
 	}
 	else if(CUR_TYPE == FUNC)
 	{
@@ -132,16 +114,7 @@ B_tree_node *get_cmd()
 
 		SYNTAX_CHECK(CUR_TYPE == SEMICOLON);
 
-		if(cmds_sce_debt)
-		{
-			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
-
-			return cmd_parent;
-		}
-		else
-		{
-			return CR_SEMICOLON(cmd, NULL);
-		}
+		PAY_CMD_DEBT;;
 	}
 	else if(CUR_TYPE == DECLARE)
 	{
@@ -150,16 +123,7 @@ B_tree_node *get_cmd()
 		cmd = get_func_decl();
 		CHECK_RET(cmd);
 
-		if(cmds_sce_debt)
-		{
-			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
-
-			return cmd_parent;
-		}
-		else
-		{
-			return CR_SEMICOLON(cmd, NULL);
-		}
+		PAY_CMD_DEBT;;
 	}
 	else if(CUR_TYPE == RETURN)
 	{
@@ -170,16 +134,7 @@ B_tree_node *get_cmd()
 
 		SYNTAX_CHECK(CUR_TYPE == SEMICOLON);
 
-		if(cmds_sce_debt)
-		{
-			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
-
-			return cmd_parent;
-		}
-		else
-		{
-			return CR_SEMICOLON(cmd, NULL);
-		}
+		PAY_CMD_DEBT;;
 	}
 	else if(CUR_TYPE == MAIN)
 	{
@@ -188,16 +143,7 @@ B_tree_node *get_cmd()
 		cmd = get_main();
 		CHECK_RET(cmd);
 
-		if(cmds_sce_debt)
-		{
-			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
-
-			return cmd_parent;
-		}
-		else
-		{
-			return CR_SEMICOLON(cmd, NULL);
-		}
+		PAY_CMD_DEBT;;
 	}
 	else
 	{
@@ -208,17 +154,7 @@ B_tree_node *get_cmd()
 
 		SYNTAX_CHECK(CUR_TYPE == SEMICOLON);
 
-		if(cmds_sce_debt)
-		{
-			B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);
-
-			return cmd_parent;
-		}
-		else
-		{
-			return CR_SEMICOLON(cmd, NULL);
-		}
-
+		PAY_CMD_DEBT;;
 	}
 }
 
@@ -228,7 +164,7 @@ B_tree_node *get_main()
 
 	B_tree_node *body = get_scope();
 
-	return create_node(MAIN, {.num_value = 0}, NULL, body).arg.node;
+	return CR_MAIN(NULL, body);
 }
 
 B_tree_node *get_return()
@@ -237,7 +173,7 @@ B_tree_node *get_return()
 
 	B_tree_node *expr = get_add();
 
-	return create_node(RETURN, {.num_value = 0}, NULL, expr).arg.node;
+	return CR_RETURN(NULL, expr);
 }
 
 B_tree_node *get_func_decl()
@@ -252,7 +188,7 @@ B_tree_node *get_func_decl()
 	B_tree_node *arg = get_id();
 	CHECK_RET(arg);
 
-	B_tree_node *args = create_node(COMMA, {.num_value = 0}, arg, NULL).arg.node;
+	B_tree_node *args = CR_COMMA(arg, NULL);
 
 	B_tree_node *cur_node = args;
 
@@ -261,7 +197,7 @@ B_tree_node *get_func_decl()
 		SYNTAX_CHECK(CUR_TYPE == COMMA);
 
 		arg = get_id();
-		cur_node->right = create_node(COMMA, {.num_value = 0}, arg, NULL).arg.node;
+		cur_node->right = CR_COMMA(arg, NULL);
 
 		cur_node = cur_node->right;
 	}
@@ -269,7 +205,7 @@ B_tree_node *get_func_decl()
 
 	B_tree_node *body = get_scope();
 
-	return create_node(FUNC_DECL, func_name->value, args, body).arg.node;
+	return CR_FUNC_DECL(func_name->value, args, body);
 }
 
 B_tree_node *get_func(bool cmd_func = false)
@@ -282,7 +218,7 @@ B_tree_node *get_func(bool cmd_func = false)
 	B_tree_node *expr = get_add();
 	CHECK_RET(expr);
 
-	B_tree_node *args = create_node(COMMA, {.num_value = 0}, expr, NULL).arg.node;
+	B_tree_node *args = CR_COMMA(expr, NULL);
 
 	B_tree_node *cur_node = args;
 
@@ -291,7 +227,7 @@ B_tree_node *get_func(bool cmd_func = false)
 		SYNTAX_CHECK(CUR_TYPE == COMMA);
 
 		expr = get_add();
-		cur_node->right = create_node(COMMA, {.num_value = 0}, expr, NULL).arg.node;
+		cur_node->right = CR_COMMA(expr, NULL);
 
 		cur_node = cur_node->right;
 	}
@@ -299,11 +235,11 @@ B_tree_node *get_func(bool cmd_func = false)
 
 	if(cmd_func)
 	{
-		return create_node(CMD_FUNC, func_name->value, args, NULL).arg.node;
+		return CR_CMD_FUNC(func_name->value, args, NULL);
 	}
 	else
 	{
-		return create_node(FUNC, func_name->value, args, NULL).arg.node;
+		return CR_FUNC(func_name->value, args, NULL);
 	}
 }
 

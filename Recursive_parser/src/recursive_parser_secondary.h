@@ -21,6 +21,15 @@
 #define CR_SEMICOLON(left_child, right_child)\
 	create_node(SEMICOLON, {.num_value = 0}, left_child, right_child).arg.node;
 
+#define CR_MAIN(left_child, right_child)\
+	create_node(MAIN, {.num_value = 0}, left_child, right_child).arg.node;
+
+#define CR_COMMA(left_child, right_child)\
+	create_node(COMMA, {.num_value = 0}, left_child, right_child).arg.node;
+
+#define CR_RETURN(left_child, right_child)\
+	create_node(RETURN, {.num_value = 0}, left_child, right_child).arg.node;
+
 #define CR_SCOPE_END(left_child, right_child)\
 	create_node(SCOPE_END, {.num_value = 0}, left_child, right_child).arg.node;
 
@@ -44,6 +53,15 @@
 
 #define CR_NUM(val, left_child, right_child)\
 	create_node(NUM, {.num_value = val}, left_child, right_child).arg.node;
+
+#define CR_FUNC_DECL(val, left_child, right_child)\
+	create_node(FUNC_DECL, val, left_child, right_child).arg.node;
+
+#define CR_CMD_FUNC(val, left_child, right_child)\
+	create_node(CMD_FUNC, val, left_child, right_child).arg.node;
+
+#define CR_FUNC(val, left_child, right_child)\
+	create_node(FUNC, val, left_child, right_child).arg.node;
 
 #define CR_VAR(val, left_child, right_child)\
 	create_node(VAR, {.var_value = val}, left_child, right_child).arg.node;
@@ -79,13 +97,25 @@
 #define PARSE_LOG(...)\
 	rec_write_log("parse_log.txt", __VA_ARGS__);
 
+#define PAY_CMD_DEBT;												\
+	if(cmds_sce_debt)												\
+	{																\
+		B_tree_node *cmd_parent = pay_debt_cmd(cmd, cmds_sce_debt);	\
+																	\
+		return cmd_parent;											\
+	}																\
+	else															\
+	{																\
+		return CR_SEMICOLON(cmd, NULL);								\
+	}
+
 void         rec_write_log  (const char *file_name, const char *fmt, ...);
 
 B_tree_node *get_general    (Tokens *passed_tokens);
 
 B_tree_node *get_cmd        ();
 
-B_tree_node *get_std_func       ();
+B_tree_node *get_std_func   ();
 
 B_tree_node *get_cond       (Node_type type);
 

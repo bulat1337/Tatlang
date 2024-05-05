@@ -13,6 +13,7 @@ typedef enum
 	FRD_INVALID_FWRITE      = 1 << 2, /**< The amount of written elements is unexpexted. */
 	FRD_INVALID_FREAD       = 1 << 3, /**< The amount of read elements is unexpexted. */
 	FRD_UKNOWN_OP           = 1 << 4,
+	FRD_INVALID_VAR_SYMBOL  = 1 << 5,
 } frd_err_t;
 
 Tokens *tokenize(const char *file, frd_err_t *error_code);

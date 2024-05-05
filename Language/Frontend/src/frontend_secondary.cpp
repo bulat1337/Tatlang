@@ -2,7 +2,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <wchar.h>
-#include <clocale>
 
 
 #include "frontend_secondary.h"
@@ -427,7 +426,7 @@ Node_type get_type(wchar_t *token, Node_value *value)
 
 	if(IS_KWD(L"рәис"))
 	{
-		LOG(L"It's рәис.\n");
+		LOG(L"It's main.\n");
 		*value = {.num_value = 0};
 
 		return MAIN;
@@ -474,9 +473,9 @@ Node_type get_type(wchar_t *token, Node_value *value)
 
 		return RETURN;
 	}
-	IF_UNR_OP(L"sin",  SIN)
-	IF_UNR_OP(L"cos",  COS)
-	IF_UNR_OP(L"ln",   LN)
+	IF_UNR_OP(L"син",  SIN)
+	IF_UNR_OP(L"кос",  COS)
+	IF_UNR_OP(L"лн",   LN)
 	IF_UNR_OP(L"тамырасты", SQRT)
 	else
 	{
@@ -519,12 +518,6 @@ wchar_t *get_symbs(const char *file_name, frd_err_t *error_code, size_t *file_le
 			symbs[id++] = (wchar_t) ch;
 		}
 		symbs[id] = L'\0';
-
-
-
-// 		FREAD(symbs, sizeof(wchar_t), length, code);
-//
-// 		symbs[length] = L'\0';
 
 		LOG(L"Successful fread code -> symbs.\n");
 
@@ -608,58 +601,40 @@ frd_err_t process_id(wchar_t * *symbs_ptr, Tokens *tokens)
 
 	wchar_t *token = NULL;
 	CALLOC(token, MAX_TOKEN_SIZE, wchar_t);
+
+
+	token = get_token(token, symbs_ptr);
+	if(token == NULL)
+	{
+		return FRD_INVALID_VAR_SYMBOL;
+	}
+
+
+	bool is_func = false;
+
+	if(*(*symbs_ptr) == L'(')
+	{
+		LOG(L"Next one after %ls is %lc so it's function type token\n",
+			 token, *(*symbs_ptr));
+
+		is_func = true;
+	}
+
+	LOG(L"\ttoken: %ls\n", token);
+
+	CALL(add_id(tokens, token, is_func));
+
+
+	return error_code;
+}
+
+wchar_t *get_token(wchar_t *token, wchar_t * *symbs_ptr)
+{
 	wchar_t *token_start = token;
 
 	wchar_t cur_sym = *(*symbs_ptr);
 
-// 	if(	(cur_sym >= L'a' && cur_sym <= L'z') ||
-// 		(cur_sym >= L'A' && cur_sym <= L'Z') ||
-// 		(cur_sym >= L'a' && cur_sym <= L'я') ||
-// 		(cur_sym >= L'А' && cur_sym <= L'Я') ||
-// 		cur_sym == L'Ә' ||
-// 		cur_sym == L'ә' ||
-// 		cur_sym == L'_' ||
-// 		cur_sym == L'$'	)
-// 	{
-// 		*token = cur_sym;
-//
-// 		token++;
-// 		(*symbs_ptr)++;
-// 		cur_sym = *(*symbs_ptr);
-// 	}
-//
-// 	while(	(cur_sym >= L'a' && cur_sym <= L'z') ||
-// 			(cur_sym >= L'A' && cur_sym <= L'Z') ||
-// 			(cur_sym >= L'a' && cur_sym <= L'я') ||
-// 			(cur_sym >= L'А' && cur_sym <= L'Я') ||
-// 			(cur_sym >= L'0' && cur_sym <= L'9') ||
-// 			cur_sym == L'Ә' ||
-// 			cur_sym == L'ә' ||
-// 			cur_sym == L'_' ||
-// 			cur_sym == L'$'	)
-// 	{
-// 		*token = cur_sym;
-//
-// 		token++;
-// 		(*symbs_ptr)++;
-// 		cur_sym = *(*symbs_ptr);
-// 	}
-
-	if(	cur_sym != '(' &&
-		cur_sym != ')' &&
-		cur_sym != ';' &&
-		cur_sym != ',' &&
-		cur_sym != '\n' &&
-		cur_sym != '\t' &&
-		cur_sym != ' ' &&
-		cur_sym != '+' &&
-		cur_sym != '-' &&
-		cur_sym != '*' &&
-		cur_sym != '/' &&
-		cur_sym != '^' &&
-		cur_sym != '=' &&
-		!(cur_sym >= L'0' && cur_sym <= L'9') &&
-		cur_sym != '#' )
+	if(!is_reserved(cur_sym) && !is_number(cur_sym))
 	{
 		*token = cur_sym;
 
@@ -667,21 +642,13 @@ frd_err_t process_id(wchar_t * *symbs_ptr, Tokens *tokens)
 		(*symbs_ptr)++;
 		cur_sym = *(*symbs_ptr);
 	}
+	else
+	{
+		LOG(L"Invalid first  symbol for variable: %lc\n", cur_sym);
+		return NULL;
+	}
 
-	while(	cur_sym != '(' &&
-		cur_sym != ')' &&
-		cur_sym != ';' &&
-		cur_sym != ',' &&
-		cur_sym != '\n' &&
-		cur_sym != '\t' &&
-		cur_sym != ' ' &&
-		cur_sym != '+' &&
-		cur_sym != '-' &&
-		cur_sym != '*' &&
-		cur_sym != '/' &&
-		cur_sym != '^' &&
-		cur_sym != '=' &&
-		cur_sym != '#' )
+	while(!is_reserved(cur_sym))
 	{
 		*token = cur_sym;
 
@@ -694,20 +661,31 @@ frd_err_t process_id(wchar_t * *symbs_ptr, Tokens *tokens)
 
 	*token = L'\0';
 
-	bool is_func = false;
+	return token_start;
+}
 
-	if(*(*symbs_ptr) == L'(')
+bool is_reserved(wchar_t symb)
+{
+	if(	symb == '('  ||
+		symb == ')'  ||
+		symb == ';'  ||
+		symb == ','  ||
+		symb == '\n' ||
+		symb == '\t' ||
+		symb == ' '  ||
+		symb == '+'  ||
+		symb == '-'  ||
+		symb == '*'  ||
+		symb == '/'  ||
+		symb == '^'  ||
+		symb == '='  ||
+		symb == '#' )
+
 	{
-		LOG(L"Next one after %ls is %lc so it's function type token\n",
-			 token_start, *(*symbs_ptr));
-
-		is_func = true;
+		return true;
 	}
-
-	LOG(L"\ttoken: %ls\n", token_start);
-
-	CALL(add_id(tokens, token_start, is_func));
-
-
-	return error_code;
+	else
+	{
+		return false;
+	}
 }

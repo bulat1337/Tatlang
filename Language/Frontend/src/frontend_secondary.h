@@ -9,9 +9,9 @@ const wchar_t * const kwds[] =
 {
 	L"булганда",
 	L"әгәр",
-	L"sin",
-	L"cos",
-	L"ln",
+	L"син",
+	L"кос",
+	L"лн",
 	L"тамырасты",
 	L"алалмаш",
 	L"мисалныяз",
@@ -67,6 +67,10 @@ frd_err_t process_sym(wchar_t * *symbs_ptr, Tokens *tokens, size_t left_amount, 
 frd_err_t process_op(wchar_t * *symbs_ptr, Tokens *tokens);
 
 frd_err_t process_id(wchar_t * *symbs_ptr, Tokens *tokens);
+
+wchar_t  *get_token (wchar_t *token, wchar_t * *symbs_ptr);
+
+bool     is_reserved(wchar_t symb);
 
 
 #endif
