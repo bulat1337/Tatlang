@@ -124,4 +124,8 @@ char     *get_loc_in_order (size_t arg_counter, bkd_err_t *error_code);
 
 bkd_err_t pop_all          (Nm_tbl_mngr *nm_tbl_mngr, FILE *asm_file);
 
+bkd_err_t write_cond_expr  (B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr);
+
+const char *get_cond_type       (Node_type type);
+
 #endif

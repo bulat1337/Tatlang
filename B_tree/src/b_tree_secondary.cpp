@@ -203,6 +203,60 @@ error_t print_regular_nodes(struct B_tree_node *node,
 					node, node->left, node->right);
 			break;
 		}
+		case ABOVE:
+		{
+			nd_description->color = PINK;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: ABOVE | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case BELOW:
+		{
+			nd_description->color = PINK;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: BELOW | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case ABOVE_EQUAL:
+		{
+			nd_description->color = PINK;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: ABOVE_EQUAL | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case BELOW_EQUAL:
+		{
+			nd_description->color = PINK;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: BELOW_EQUAL | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case EQUAL:
+		{
+			nd_description->color = PINK;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: EQUAL | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
+		case NOT_EQUAL:
+		{
+			nd_description->color = PINK;
+
+			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
+					"{%p | {type: NOT_EQUAL | val: -} | {L: %p | R: %p}}",
+					node, node->left, node->right);
+			break;
+		}
 		case COMMA:
 		{
 			nd_description->color = LIGHT_GREY;
@@ -421,6 +475,36 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 		case CLOSE_CBR:
 		{
 			DUMP("          CLOSE_CBR");
+			break;
+		}
+		case ABOVE:
+		{
+			DUMP("          ABOVE");
+			break;
+		}
+		case BELOW:
+		{
+			DUMP("          BELOW");
+			break;
+		}
+		case ABOVE_EQUAL:
+		{
+			DUMP("          ABOVE_EQUAL");
+			break;
+		}
+		case BELOW_EQUAL:
+		{
+			DUMP("          BELOW_EQUAL");
+			break;
+		}
+		case EQUAL:
+		{
+			DUMP("          EQUAL");
+			break;
+		}
+		case NOT_EQUAL:
+		{
+			DUMP("          NOT_EQUAL");
 			break;
 		}
 		case SEMICOLON:

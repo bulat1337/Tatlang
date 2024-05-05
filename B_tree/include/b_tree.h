@@ -53,6 +53,12 @@ enum Node_type
 	FUNC_DECL   = 20,
 	MAIN        = 21,
 	CMD_FUNC    = 22,
+	ABOVE       = 23,
+	BELOW       = 24,
+	ABOVE_EQUAL = 25,
+	BELOW_EQUAL = 26,
+	EQUAL       = 27,
+	NOT_EQUAL   = 28,
 };
 
 enum Ops
@@ -136,6 +142,7 @@ const char * const BLUE            = "#0060CB";
 const char * const GREEN           = "#009239";
 const char * const FOX_ORANGE      = "#C86502";
 const char * const LIGHT_GREY      = "#CDCDCD";
+const char * const PINK            = "#FF62CF";
 
 
 

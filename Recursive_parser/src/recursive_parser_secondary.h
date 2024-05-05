@@ -123,7 +123,7 @@ B_tree_node *get_ass        ();
 
 B_tree_node *get_num        ();
 
-B_tree_node *get_add        ();
+B_tree_node *get_expr        ();
 
 B_tree_node *get_mul        ();
 

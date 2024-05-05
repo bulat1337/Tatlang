@@ -171,7 +171,7 @@ B_tree_node *get_return()
 {
 	SYNTAX_CHECK(CUR_TYPE == RETURN);
 
-	B_tree_node *expr = get_add();
+	B_tree_node *expr = get_expr();
 
 	return CR_RETURN(NULL, expr);
 }
@@ -215,7 +215,7 @@ B_tree_node *get_func(bool cmd_func = false)
 
 	SYNTAX_CHECK(CUR_TYPE == OPEN_BR);
 
-	B_tree_node *expr = get_add();
+	B_tree_node *expr = get_expr();
 	CHECK_RET(expr);
 
 	B_tree_node *args = CR_COMMA(expr, NULL);
@@ -226,7 +226,7 @@ B_tree_node *get_func(bool cmd_func = false)
 	{
 		SYNTAX_CHECK(CUR_TYPE == COMMA);
 
-		expr = get_add();
+		expr = get_expr();
 		cur_node->right = CR_COMMA(expr, NULL);
 
 		cur_node = cur_node->right;
@@ -267,7 +267,7 @@ B_tree_node *get_std_func()
 		{
 			PARSE_LOG("Getting brace expression.\n");
 
-			child = get_add();
+			child = get_expr();
 			CHECK_RET(child);
 
 			break;
@@ -292,7 +292,7 @@ B_tree_node *get_cond(Node_type type)
 	SYNTAX_CHECK(CUR_TYPE == OPEN_BR);
 
 	PARSE_LOG("Getting brace expression.\n");
-	B_tree_node *br_expr = get_add();
+	B_tree_node *br_expr = get_expr();
 	CHECK_RET(br_expr);
 
 	SYNTAX_CHECK(CUR_TYPE == CLOSE_BR);
@@ -310,7 +310,7 @@ B_tree_node *get_ass()
 
 	SYNTAX_CHECK(CUR_TYPE == OP && CUR_OP == ASS);
 
-	B_tree_node *expr = get_add();
+	B_tree_node *expr = get_expr();
 	CHECK_RET(expr);
 
 	return CR_ASS(var, expr);
@@ -327,25 +327,43 @@ B_tree_node *get_num()
 	return CR_NUM(val, NULL, NULL);
 }
 
-B_tree_node *get_add()
+B_tree_node *get_expr()
 {
 	PARSE_LOG("%s log:\n", __func__);
 	B_tree_node *val = get_mul();
 	CHECK_RET(val);
 
-	while(	CUR_TYPE == OP &&
-			(	CUR_OP == ADD ||
-				CUR_OP == SUB	)	)
+	if(CUR_TYPE == OP)
 	{
-		PARSE_LOG("It's ADD or SUB.\n");
-		Ops op = CUR_OP;
+		while(	CUR_TYPE == OP &&
+				(	CUR_OP == ADD ||
+					CUR_OP == SUB	)	)
+		{
+			PARSE_LOG("It's ADD or SUB.\n");
+			Ops op = CUR_OP;
 
+			id++;
+
+			B_tree_node *val_2 = get_mul();
+			CHECK_RET(val_2);
+
+			val = CR_OP(op, val, val_2);
+		}
+	}
+	else if(	CUR_TYPE == ABOVE ||
+				CUR_TYPE == BELOW ||
+				CUR_TYPE == ABOVE_EQUAL ||
+				CUR_TYPE == BELOW_EQUAL ||
+				CUR_TYPE == EQUAL ||
+				CUR_TYPE == NOT_EQUAL	)
+	{
+		Node_type cond_type = CUR_TYPE;
 		id++;
 
 		B_tree_node *val_2 = get_mul();
 		CHECK_RET(val_2);
 
-		val = CR_OP(op, val, val_2);
+		val = create_node(cond_type, {.num_value = 0}, val, val_2).arg.node;
 	}
 
 	return val;
@@ -379,7 +397,7 @@ B_tree_node *get_par()
 	if(CUR_TYPE == OPEN_BR)
 	{
 		id++;
-		B_tree_node *val = get_add();
+		B_tree_node *val = get_expr();
 		CHECK_RET(val);
 
 		SYNTAX_CHECK(CUR_TYPE == CLOSE_BR);
@@ -428,7 +446,7 @@ B_tree_node *get_unary()
 
 	SYNTAX_CHECK(CUR_TYPE == OPEN_BR);
 
-	B_tree_node *child = get_add();
+	B_tree_node *child = get_expr();
 	CHECK_RET(child);
 
 	SYNTAX_CHECK(CUR_TYPE == CLOSE_BR);

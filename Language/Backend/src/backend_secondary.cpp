@@ -131,6 +131,17 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 
 			break;
 		}
+		case ABOVE:
+		case BELOW:
+		case ABOVE_EQUAL:
+		case BELOW_EQUAL:
+		case EQUAL:
+		case NOT_EQUAL:
+		{
+			write_cond_expr(node, asm_file, nm_tbl_mngr);
+
+			break;
+		}
 		case DECLARE:
 		case COMMA:
 		case KEYWORD:
@@ -153,6 +164,66 @@ bkd_err_t asmbl(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 	}
 
 	return error_code;
+}
+
+bkd_err_t write_cond_expr(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
+{
+	bkd_err_t error_code = BKD_ALL_GOOD;
+	const char *cond = get_cond_type(node->type);
+	if(cond == NULL)
+	{
+		return BKD_INVALID_COND_EXPR;
+	}
+
+	WRITE_ASM("push 0\n");
+
+	ASMBL(node->right);
+	ASMBL(node->left);
+
+	WRITE_ASM("%s break_%lu\n", cond, label_ct);
+	WRITE_ASM("push 1\n");
+	WRITE_ASM("add\n");
+	WRITE_ASM(":break_%lu\n", label_ct++);
+	WRITE_ASM("push 0\n");
+	WRITE_ASM("add\n");
+
+	return error_code;
+}
+
+const char *get_cond_type(Node_type type)
+{
+	switch(type)
+	{
+		case ABOVE:
+		{
+			return "ja";
+		}
+		case BELOW:
+		{
+			return "jb";
+		}
+		case ABOVE_EQUAL:
+		{
+			return "jae";
+		}
+		case BELOW_EQUAL:
+		{
+			return "jbe";
+		}
+		case EQUAL:
+		{
+			return "je";
+		}
+		case NOT_EQUAL:
+		{
+			return "jne";
+		}
+		default:
+		{
+			LOG("%s: ERROR:\n\tInvalid cond expr.\n", __func__);
+			return NULL;
+		}
+	}
 }
 
 bkd_err_t write_func(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)

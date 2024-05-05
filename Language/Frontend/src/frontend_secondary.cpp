@@ -291,6 +291,36 @@ void dump_tokens(Tokens *tokens)
 				LOG(L"\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
+			case ABOVE:
+			{
+				LOG(L"\tABOVE\n");
+				break;
+			}
+			case BELOW:
+			{
+				LOG(L"\tBELOW\n");
+				break;
+			}
+			case ABOVE_EQUAL:
+			{
+				LOG(L"\tABOVE_EQUAL\n");
+				break;
+			}
+			case BELOW_EQUAL:
+			{
+				LOG(L"\tBELOW_EQUAL\n");
+				break;
+			}
+			case EQUAL:
+			{
+				LOG(L"\tEQUAL\n");
+				break;
+			}
+			case NOT_EQUAL:
+			{
+				LOG(L"\tNOT_EQUAL\n");
+				break;
+			}
 			case OPEN_BR:
 			{
 				LOG(L"\tOPEN_BR\n");
@@ -566,6 +596,12 @@ frd_err_t process_sym(wchar_t * *symbs_ptr, Tokens *tokens, size_t left_amount, 
 		CASE(L'}', CLOSE_CBR)
 		CASE(L';', SEMICOLON)
 		CASE(L',', COMMA)
+		CASE(L'>', ABOVE)
+		CASE(L'<', BELOW)
+		CASE(L'≥', ABOVE_EQUAL)
+		CASE(L'≤', BELOW_EQUAL)
+		CASE(L'≡', EQUAL)
+		CASE(L'≠', NOT_EQUAL)
 		case L'#':
 		{
 			LOG(L"Skipping comment.\n");
@@ -666,20 +702,26 @@ wchar_t *get_token(wchar_t *token, wchar_t * *symbs_ptr)
 
 bool is_reserved(wchar_t symb)
 {
-	if(	symb == '('  ||
-		symb == ')'  ||
-		symb == ';'  ||
-		symb == ','  ||
-		symb == '\n' ||
-		symb == '\t' ||
-		symb == ' '  ||
-		symb == '+'  ||
-		symb == '-'  ||
-		symb == '*'  ||
-		symb == '/'  ||
-		symb == '^'  ||
-		symb == '='  ||
-		symb == '#' )
+	if(	symb == L'('  ||
+		symb == L')'  ||
+		symb == L';'  ||
+		symb == L','  ||
+		symb == L'\n' ||
+		symb == L'\t' ||
+		symb == L' '  ||
+		symb == L'+'  ||
+		symb == L'-'  ||
+		symb == L'*'  ||
+		symb == L'/'  ||
+		symb == L'^'  ||
+		symb == L'='  ||
+		symb == L'>'  ||
+		symb == L'<'  ||
+		symb == L'≥'  ||
+		symb == L'≤'  ||
+		symb == L'≡'  ||
+		symb == L'≠'  ||
+		symb == L'#' )
 
 	{
 		return true;
