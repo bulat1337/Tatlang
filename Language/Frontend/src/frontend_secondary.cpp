@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <wchar.h>
+#include <clocale>
+
 
 #include "frontend_secondary.h"
 #include "utils.h"
@@ -9,11 +12,11 @@
 #include "def_scnd_dsl.h"
 
 
-void frd_write_log(const char *file_name, const char *fmt, ...)
+void frd_write_log(const char *file_name, const wchar_t *fmt, ...)
 {
     static FILE *log_file = fopen(file_name, "w");
 
-    if (log_file == NULL)
+    if(log_file == NULL)
 	{
         perror("Error opening log_file");
         return;
@@ -23,15 +26,15 @@ void frd_write_log(const char *file_name, const char *fmt, ...)
 
     va_start(args, fmt);
 
-    vfprintf(log_file, fmt, args);
+    vfwprintf(log_file, fmt, args);
 
     va_end(args);
 }
 
-char *skip_nums(char *symbs)
+wchar_t *skip_nums(wchar_t *symbs)
 {
-	while(	(*(symbs) >= '0' && *(symbs) <= '9') ||
-			 *(symbs) == '.')
+	while(	(*(symbs) >= L'0' && *(symbs) <= L'9') ||
+			 *(symbs) == L'.')
 	{
 		symbs++;
 	}
@@ -39,9 +42,9 @@ char *skip_nums(char *symbs)
 	return symbs;
 }
 
-bool is_number(char sym)
+bool is_number(wchar_t sym)
 {
-	if(sym >= '0' && sym <= '9')
+	if(sym >= L'0' && sym <= L'9')
 	{
 		return true;
 	}
@@ -51,14 +54,14 @@ bool is_number(char sym)
 	}
 }
 
-bool is_op(char sym)
+bool is_op(wchar_t sym)
 {
-	if(	sym == '+' ||
-		sym == '-' ||
-		sym == '*' ||
-		sym == '/' ||
-		sym == '=' ||
-		sym == '^')
+	if(	sym == L'+' ||
+		sym == L'-' ||
+		sym == L'*' ||
+		sym == L'/' ||
+		sym == L'=' ||
+		sym == L'^')
 	{
 		return true;
 	}
@@ -68,11 +71,12 @@ bool is_op(char sym)
 	}
 }
 
-bool is_blank(char sym)
+bool is_blank(wchar_t sym)
 {
-	if(	sym == ' '  ||
-		sym == '\n' ||
-		sym == '\t')
+	if(	sym == L' '  ||
+		sym == L'\n' ||
+		sym == L'\0' ||
+		sym == L'\t')
 	{
 		return true;
 	}
@@ -82,11 +86,11 @@ bool is_blank(char sym)
 	}
 }
 
-char *skip_comment(char *symbs, size_t left_amount)
+wchar_t *skip_comment(wchar_t *symbs, size_t left_amount)
 {
 	size_t skip_ct = 0;
 
-	while(*symbs != '\n' && skip_ct < left_amount)
+	while(*symbs != L'\n' && skip_ct < left_amount)
 	{
 		symbs++;
 		skip_ct++;
@@ -103,7 +107,7 @@ frd_err_t init_tokens(Tokens *tokens)
 	tokens->size = 0;
 	tokens->capacity = STARTER_TOKENS_AMOUNT;
 
-	LOG("Tokens itited.\n");
+	LOG(L"Tokens itited.\n");
 
 	return FRD_ALL_GOOD;
 }
@@ -121,52 +125,58 @@ frd_err_t add_token(Tokens *tokens, Node_type type, Node_value value)
 {
 	if(tokens->size >= tokens->capacity)
 	{
-		LOG("Token buffer reallocation. \n\tNew size: %lu\n", tokens->capacity * 2);
+		LOG(L"Token buffer reallocation. \n\tNew size: %lu\n", tokens->capacity * 2);
 
 		tokens->capacity *= 2;
 
 		REALLOC(tokens->data, tokens->capacity, B_tree_node);
 
-		LOG("tokens->data reallocated successfuly.");
+		if(tokens->capacity > 10000)
+		{
+			printf("inf tok\n");
+			exit(EXIT_FAILURE);
+		}
+
+		LOG(L"tokens->data reallocated successfuly.");
 	}
 
 	tokens->data[tokens->size].type  = type;
 	tokens->data[tokens->size].value = value;
 
-	LOG("New token\n");
-	LOG("\taddress: %p\n", tokens->data[tokens->size]);
-	LOG("\ttype: %d\n", tokens->data[tokens->size].type);
+	LOG(L"New token\n");
+	LOG(L"\taddress: %p\n", tokens->data[tokens->size]);
+	LOG(L"\ttype: %d\n", tokens->data[tokens->size].type);
 
 	tokens->size++;
 
 	return FRD_ALL_GOOD;
 }
 
-Ops get_op(char sym, frd_err_t *error_code)
+Ops get_op(wchar_t sym, frd_err_t *error_code)
 {
 	switch(sym)
 	{
-		case '+':
+		case L'+':
 		{
 			return ADD;
 		}
-		case '-':
+		case L'-':
 		{
 			return SUB;
 		}
-		case '*':
+		case L'*':
 		{
 			return MUL;
 		}
-		case '/':
+		case L'/':
 		{
 			return DIV;
 		}
-		case '^':
+		case L'^':
 		{
 			return POW;
 		}
-		case '=':
+		case L'=':
 		{
 			return ASS;
 		}
@@ -178,7 +188,7 @@ Ops get_op(char sym, frd_err_t *error_code)
 	}
 }
 
-frd_err_t add_id(Tokens *tokens, char *token, bool is_func)
+frd_err_t add_id(Tokens *tokens, wchar_t *token, bool is_func)
 {
 	frd_err_t error_code = FRD_ALL_GOOD;
 	Node_type type = VAR;
@@ -190,32 +200,31 @@ frd_err_t add_id(Tokens *tokens, char *token, bool is_func)
 	}
 	else if(is_func)
 	{
-		LOG("It's func.\n");
+		LOG(L"It's func.\n");
 		CALL(add_token(tokens, FUNC, {.var_value = token}));
 	}
 	else
 	{
-		LOG("It's VAR: %s\n", token);
+		LOG(L"It's VAR: %ls\n", token);
 		CALL(add_token(tokens, VAR, {.var_value = token}));
 	}
 
 	return error_code;
 }
 
-bool is_kwd(char *token, Node_type *type, Node_value *value)
+bool is_kwd(wchar_t *token, Node_type *type, Node_value *value)
 {
-	FOR(size_t kwd_id = 0; kwd_id < kwds_amount; kwd_id++)
+	for(size_t kwd_id = 0; kwd_id < kwds_amount; kwd_id++)
 	{
-		if(!strncmp(token, kwds[kwd_id], MAX_TOKEN_SIZE))
+		if(!wcsncmp(token, kwds[kwd_id], MAX_TOKEN_SIZE))
 		{
-			LOG("It's KEYWORD: %s\n", token);
+			LOG(L"It's KEYWORD: %ls\n", token);
 
 			*type = get_type(token, value);
 
 			return true;
 		}
 
-		FOR_END
 	}
 
 	return false;
@@ -223,129 +232,139 @@ bool is_kwd(char *token, Node_type *type, Node_value *value)
 
 void dump_tokens(Tokens *tokens)
 {
-	LOG("\nTokens:\n");
+	LOG(L"\nTokens:\n");
 	FOR(size_t token_id = 0; token_id < tokens->size; token_id++)
 	{
-		LOG("%p\n", tokens->data[token_id]);
+		LOG(L"%p\n", tokens->data[token_id]);
 		switch(tokens->data[token_id].type)
 		{
 			case NUM:
 			{
-				LOG("\tNUM");
-				LOG("\t%.2lf\n", tokens->data[token_id].value.num_value);
+				LOG(L"\tNUM");
+				LOG(L"\t%.2lf\n", tokens->data[token_id].value.num_value);
 				break;
 			}
 			case OP:
 			{
-				LOG("\tOP");
+				LOG(L"\tOP");
 				log_op(tokens->data[token_id].value.op_value);
 				break;
 			}
 			case VAR:
 			{
-				LOG("\tVAR");
-				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				LOG(L"\tVAR");
+				LOG(L"\t%ls\n", tokens->data[token_id].value.var_value);
 				break;
 			}
 			case KEYWORD:
 			{
-				LOG("\tKEYWORD");
-				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				LOG(L"\tKEYWORD");
+				LOG(L"\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
 			case FUNC:
 			{
-				LOG("\tFUNC");
-				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				LOG(L"\tFUNC");
+				LOG(L"\t%ls\n", tokens->data[token_id].value.var_value);
 				break;
 			}
 			case STD_FUNC:
 			{
-				LOG("\tSTD_FUNC");
+				LOG(L"\tSTD_FUNC");
 				log_std_func(tokens->data[token_id].value.func);
 				break;
 			}
 			case UNR_OP:
 			{
-				LOG("\tUN_OP");
+				LOG(L"\tUN_OP");
 				log_op(tokens->data[token_id].value.op_value);
 				break;
 			}
 			case SCOPE_START:
 			{
-				LOG("\tSCS");
-				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				LOG(L"\tSCS");
+				LOG(L"\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
 			case SCOPE_END:
 			{
-				LOG("\tSCE");
-				LOG("\t%s\n", tokens->data[token_id].value.var_value);
+				LOG(L"\tSCE");
+				LOG(L"\t%s\n", tokens->data[token_id].value.var_value);
 				break;
 			}
 			case OPEN_BR:
 			{
-				LOG("\tOPEN_BR\n");
+				LOG(L"\tOPEN_BR\n");
 				break;
 			}
 			case CLOSE_BR:
 			{
-				LOG("\tCLOSE_BR\n");
+				LOG(L"\tCLOSE_BR\n");
+				break;
+			}
+			case FUNC_DECL:
+			{
+				LOG(L"\tFUNC_DECL\n");
+				break;
+			}
+			case CMD_FUNC:
+			{
+				LOG(L"\tCMD_FUNC\n");
 				break;
 			}
 			case OPEN_CBR:
 			{
-				LOG("\tOPEN_CBR\n");
+				LOG(L"\tOPEN_CBR\n");
 				break;
 			}
 			case CLOSE_CBR:
 			{
-				LOG("\tCLOSE_CBR\n");
+				LOG(L"\tCLOSE_CBR\n");
 				break;
 			}
 			case IF:
 			{
-				LOG("\tIF\n");
+				LOG(L"\tIF\n");
 				break;
 			}
 			case WHILE:
 			{
-				LOG("\tWHILE\n");
+				LOG(L"\tWHILE\n");
 				break;
 			}
 			case SEMICOLON:
 			{
-				LOG("\tSEMICOLON\n");
+				LOG(L"\tSEMICOLON\n");
 				break;
 			}
 			case MAIN:
 			{
-				LOG("\tMAIN\n");
+				LOG(L"\tMAIN\n");
 				break;
 			}
 			case RETURN:
 			{
-				LOG("\tRETURN\n");
+				LOG(L"\tRETURN\n");
 				break;
 			}
 			case DECLARE:
 			{
-				LOG("\tDECLARE\n");
+				LOG(L"\tDECLARE\n");
 				break;
 			}
 			case COMMA:
 			{
-				LOG("\tCOMMA\n");
+				LOG(L"\tCOMMA\n");
 				break;
 			}
 			case END:
 			{
-				LOG("\tEND\n");
+				LOG(L"\tEND\n");
 				break;
 			}
 			default:
 			{
-				LOG("UKNOWN TYPE\n");
+				LOG(L"UKNOWN TYPE\n");
 			}
 		}
 
@@ -371,7 +390,7 @@ void log_op(Ops op)
 		CASE(ASS)
 		default:
 		{
-			LOG("UKNOWN OPERATION\n")
+			LOG(L"UKNOWN OPERATION\n")
 		}
 	}
 }
@@ -384,7 +403,7 @@ void log_std_func(Std_func func_type)
 		CASE(PUTEXPR)
 		default:
 		{
-			LOG("UKNOWN STD_FUNC\n")
+			LOG(L"UKNOWN STD_FUNC\n")
 		}
 	}
 }
@@ -392,76 +411,76 @@ void log_std_func(Std_func func_type)
 #include "undef_log_op_dsl.h"
 
 #define IS_KWD(check_kwd)\
-	!strncmp(token, check_kwd, MAX_TOKEN_SIZE)
+	!wcsncmp(token, check_kwd, MAX_TOKEN_SIZE)
 
 #define IF_UNR_OP(name, type)						\
 	else if(IS_KWD(name))							\
 	{												\
-		LOG("It's unary operation: %s.\n", name);	\
+		LOG(L"It's unary operation: %ls.\n", name);	\
 		*value = {.op_value = type};				\
 													\
 		return UNR_OP;								\
 	}
 
-Node_type get_type(char *token, Node_value *value)
+Node_type get_type(wchar_t *token, Node_value *value)
 {
 
-	if(IS_KWD("main"))
+	if(IS_KWD(L"рәис"))
 	{
-		LOG("It's main.\n");
+		LOG(L"It's рәис.\n");
 		*value = {.num_value = 0};
 
 		return MAIN;
 	}
-	else if(IS_KWD("putexpr"))
+	else if(IS_KWD(L"мисалныяз"))
 	{
-		LOG("It's standart func: putexpr.\n");
+		LOG(L"It's standart func: putexpr.\n");
 		*value = {.func =  PUTEXPR};
 
 		return STD_FUNC;
 	}
-	else if(IS_KWD("getvar"))
+	else if(IS_KWD(L"алалмаш"))
 	{
-		LOG("It's standart func: getvar.\n");
+		LOG(L"It's standart func: getvar.\n");
 		*value = {.func =  GETVAR};
 
 		return STD_FUNC;
 	}
-	else if(IS_KWD("while"))
+	else if(IS_KWD(L"булганда"))
 	{
-		LOG("It's while.\n");
+		LOG(L"It's while.\n");
 		*value = {.num_value = 0};
 
 		return WHILE;
 	}
-	else if(IS_KWD("if"))
+	else if(IS_KWD(L"әгәр"))
 	{
-		LOG("It's if.\n");
+		LOG(L"It's if.\n");
 		*value = {.num_value = 0};
 
 		return IF;
 	}
-	else if(IS_KWD("declare"))
+	else if(IS_KWD(L"белдерү"))
 	{
-		LOG("It's declare.\n");
+		LOG(L"It's declare.\n");
 		*value = {.num_value = 0};
 
 		return DECLARE;
 	}
-	else if(IS_KWD("return"))
+	else if(IS_KWD(L"киребир"))
 	{
-		LOG("It's return.\n");
+		LOG(L"It's return.\n");
 		*value = {.num_value = 0};
 
 		return RETURN;
 	}
-	IF_UNR_OP("sin",  SIN)
-	IF_UNR_OP("cos",  COS)
-	IF_UNR_OP("ln",   LN)
-	IF_UNR_OP("sqrt", SQRT)
+	IF_UNR_OP(L"sin",  SIN)
+	IF_UNR_OP(L"cos",  COS)
+	IF_UNR_OP(L"ln",   LN)
+	IF_UNR_OP(L"тамырасты", SQRT)
 	else
 	{
-		LOG("%s: ERROR:\n\tKeyword could not be handled: %s.\n", __func__, token);
+		LOG(L"%s: ERROR:\n\tKeyword could not be handled: %ls.\n", __func__, token);
 
 		return NUM;
 	}
@@ -471,29 +490,48 @@ Node_type get_type(char *token, Node_value *value)
 
 #include "def_get_sym_dsl.h"
 
-char *get_symbs(const char *file_name, frd_err_t *error_code, size_t *file_len)
+wchar_t *get_symbs(const char *file_name, frd_err_t *error_code, size_t *file_len)
 {
 	WITH_OPEN
 	(
 
 		file_name, "r", code,
 
-		LOG("%s is opened.\n", file_name);
+		LOG(L"%s is opened.\n", file_name);
 
 		size_t length = get_file_length(code);
 		*file_len = length;
 
-		LOG("File length: %lu\n", length);
+		LOG(L"File length: %lu\n", length);
 
-		char *symbs = NULL;
-		CALLOC(symbs, length + 1, char);
-		LOG("symbs is allocated.\n");
+		wchar_t *symbs = NULL;
+		CALLOC(symbs, length + 1, wchar_t);
+		LOG(L"symbs is allocated.\n");
 
-		FREAD(symbs, sizeof(char), length, code);
 
-		symbs[length] = '\0';
 
-		LOG("Successful fread code -> symbs.\n");
+
+		size_t id = 0;
+		wint_t ch;
+
+		while ((ch = fgetwc(code)) != WEOF && id < length)
+		{
+			symbs[id++] = (wchar_t) ch;
+		}
+		symbs[id] = L'\0';
+
+
+
+// 		FREAD(symbs, sizeof(wchar_t), length, code);
+//
+// 		symbs[length] = L'\0';
+
+		LOG(L"Successful fread code -> symbs.\n");
+
+		LOG(L"read code:\n");
+
+		LOG(L"%ls\n", symbs);
+
 
 		return symbs;
 	)
@@ -501,17 +539,17 @@ char *get_symbs(const char *file_name, frd_err_t *error_code, size_t *file_len)
 
 #include "undef_get_sym_dsl.h"
 
-frd_err_t add_num(Tokens *tokens, char * *symbs_ptr)
+frd_err_t add_num(Tokens *tokens, wchar_t * *symbs_ptr)
 {
 	frd_err_t error_code = FRD_ALL_GOOD;
 
-	LOG("It's a number.\n");
+	LOG(L"It's a number.\n");
 
 	double num = 0;
 
-	sscanf(*symbs_ptr, "%lf", &num);
+	swscanf(*symbs_ptr, L"%lf", &num);
 
-	LOG("\tnum: %lf\n", num);
+	LOG(L"\tnum: %lf\n", num);
 
 	CALL(add_token(tokens, NUM, {.num_value = num}));
 
@@ -520,24 +558,24 @@ frd_err_t add_num(Tokens *tokens, char * *symbs_ptr)
 	return error_code;
 }
 
-frd_err_t process_sym(char * *symbs_ptr, Tokens *tokens, size_t left_amount, bool *processed)
+frd_err_t process_sym(wchar_t * *symbs_ptr, Tokens *tokens, size_t left_amount, bool *processed)
 {
 	frd_err_t error_code = FRD_ALL_GOOD;
 	*processed = true;
 
-	char cur_symb = *(*symbs_ptr);
+	wchar_t cur_symb = *(*symbs_ptr);
 
 	switch(cur_symb)
 	{
-		CASE('(', OPEN_BR)
-		CASE(')', CLOSE_BR)
-		CASE('{', OPEN_CBR)
-		CASE('}', CLOSE_CBR)
-		CASE(';', SEMICOLON)
-		CASE(',', COMMA)
-		case '#':
+		CASE(L'(', OPEN_BR)
+		CASE(L')', CLOSE_BR)
+		CASE(L'{', OPEN_CBR)
+		CASE(L'}', CLOSE_CBR)
+		CASE(L';', SEMICOLON)
+		CASE(L',', COMMA)
+		case L'#':
 		{
-			LOG("Skipping comment.\n");
+			LOG(L"Skipping comment.\n");
 			(*symbs_ptr) = skip_comment((*symbs_ptr), left_amount);
 
 			return error_code;
@@ -548,11 +586,11 @@ frd_err_t process_sym(char * *symbs_ptr, Tokens *tokens, size_t left_amount, boo
 	return error_code;
 }
 
-frd_err_t process_op(char * *symbs_ptr, Tokens *tokens)
+frd_err_t process_op(wchar_t * *symbs_ptr, Tokens *tokens)
 {
 	frd_err_t error_code = FRD_ALL_GOOD;
 
-	LOG("It's OP.\n");
+	LOG(L"It's OP.\n");
 
 	Ops op = get_op(*(*symbs_ptr), &error_code);
 	CHECK_ERROR;
@@ -564,32 +602,111 @@ frd_err_t process_op(char * *symbs_ptr, Tokens *tokens)
 	return error_code;
 }
 
-frd_err_t process_id(char * *symbs_ptr, Tokens *tokens)
+frd_err_t process_id(wchar_t * *symbs_ptr, Tokens *tokens)
 {
 	frd_err_t error_code = FRD_ALL_GOOD;
 
-	char *token = NULL;
-	CALLOC(token, MAX_TOKEN_SIZE, char);
+	wchar_t *token = NULL;
+	CALLOC(token, MAX_TOKEN_SIZE, wchar_t);
+	wchar_t *token_start = token;
 
-	int amount = 0;
+	wchar_t cur_sym = *(*symbs_ptr);
 
-	sscanf((*symbs_ptr), "%[a-zA-Z0-9_$]%n", token, &amount);
+// 	if(	(cur_sym >= L'a' && cur_sym <= L'z') ||
+// 		(cur_sym >= L'A' && cur_sym <= L'Z') ||
+// 		(cur_sym >= L'a' && cur_sym <= L'я') ||
+// 		(cur_sym >= L'А' && cur_sym <= L'Я') ||
+// 		cur_sym == L'Ә' ||
+// 		cur_sym == L'ә' ||
+// 		cur_sym == L'_' ||
+// 		cur_sym == L'$'	)
+// 	{
+// 		*token = cur_sym;
+//
+// 		token++;
+// 		(*symbs_ptr)++;
+// 		cur_sym = *(*symbs_ptr);
+// 	}
+//
+// 	while(	(cur_sym >= L'a' && cur_sym <= L'z') ||
+// 			(cur_sym >= L'A' && cur_sym <= L'Z') ||
+// 			(cur_sym >= L'a' && cur_sym <= L'я') ||
+// 			(cur_sym >= L'А' && cur_sym <= L'Я') ||
+// 			(cur_sym >= L'0' && cur_sym <= L'9') ||
+// 			cur_sym == L'Ә' ||
+// 			cur_sym == L'ә' ||
+// 			cur_sym == L'_' ||
+// 			cur_sym == L'$'	)
+// 	{
+// 		*token = cur_sym;
+//
+// 		token++;
+// 		(*symbs_ptr)++;
+// 		cur_sym = *(*symbs_ptr);
+// 	}
 
-	(*symbs_ptr) += amount;
+	if(	cur_sym != '(' &&
+		cur_sym != ')' &&
+		cur_sym != ';' &&
+		cur_sym != ',' &&
+		cur_sym != '\n' &&
+		cur_sym != '\t' &&
+		cur_sym != ' ' &&
+		cur_sym != '+' &&
+		cur_sym != '-' &&
+		cur_sym != '*' &&
+		cur_sym != '/' &&
+		cur_sym != '^' &&
+		cur_sym != '=' &&
+		!(cur_sym >= L'0' && cur_sym <= L'9') &&
+		cur_sym != '#' )
+	{
+		*token = cur_sym;
+
+		token++;
+		(*symbs_ptr)++;
+		cur_sym = *(*symbs_ptr);
+	}
+
+	while(	cur_sym != '(' &&
+		cur_sym != ')' &&
+		cur_sym != ';' &&
+		cur_sym != ',' &&
+		cur_sym != '\n' &&
+		cur_sym != '\t' &&
+		cur_sym != ' ' &&
+		cur_sym != '+' &&
+		cur_sym != '-' &&
+		cur_sym != '*' &&
+		cur_sym != '/' &&
+		cur_sym != '^' &&
+		cur_sym != '=' &&
+		cur_sym != '#' )
+	{
+		*token = cur_sym;
+
+		token++;
+		(*symbs_ptr)++;
+		cur_sym = *(*symbs_ptr);
+	}
+
+
+
+	*token = L'\0';
 
 	bool is_func = false;
 
-	if(*(*symbs_ptr) == '(')
+	if(*(*symbs_ptr) == L'(')
 	{
-		LOG("Next one after %s is %c so it's function type token\n",
-			 token, *(*symbs_ptr));
+		LOG(L"Next one after %ls is %lc so it's function type token\n",
+			 token_start, *(*symbs_ptr));
 
 		is_func = true;
 	}
 
-	LOG("\ttoken: %s\n", token);
+	LOG(L"\ttoken: %ls\n", token_start);
 
-	CALL(add_id(tokens, token, is_func));
+	CALL(add_id(tokens, token_start, is_func));
 
 
 	return error_code;

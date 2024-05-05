@@ -5,7 +5,7 @@
 #define ALLOCATION_CHECK(ptr)										\
 	if(ptr == NULL)													\
 	{																\
-		LOG("ERROR:\n\tUnable to allocate "#ptr".\n");				\
+		LOG(L"ERROR:\n\tUnable to allocate "#ptr".\n");				\
 																	\
 		*error_code = FRD_UNABLE_TO_ALLOCATE;						\
 		return NULL;												\
@@ -22,9 +22,9 @@
 #define FREAD_CHECK(read_elems, amount)								\
 	if(read_elems != amount)										\
 	{																\
-		LOG("ERROR: Fread read unexpected amount of elems.\n");		\
-		LOG("\t expected amount: %lu.\n", amount);					\
-		LOG("\t read amount: %lu.\n", read_elems);					\
+		LOG(L"ERROR: Fread read unexpected amount of elems.\n");		\
+		LOG(L"\t expected amount: %lu.\n", amount);					\
+		LOG(L"\t read amount: %lu.\n", read_elems);					\
 																	\
 		*error_code = FRD_INVALID_FREAD;								\
 		return NULL;												\

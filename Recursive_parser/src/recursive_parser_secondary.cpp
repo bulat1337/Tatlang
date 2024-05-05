@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
+#include <wchar.h>
 
 #include "recursive_parser_secondary.h"
 
@@ -503,9 +504,9 @@ B_tree_node *get_id()
 {
 	PARSE_LOG("%s log:\n", __func__);
 
-	char *var_name = CUR_VAR;
+	wchar_t *var_name = CUR_VAR;
 
-	PARSE_LOG("Variable name: %s.\n", var_name);
+	PARSE_LOG("Variable name: %ls.\n", var_name);
 
 	id++;
 	return CR_VAR(var_name, NULL, NULL);

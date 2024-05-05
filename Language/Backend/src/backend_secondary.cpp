@@ -170,7 +170,6 @@ bkd_err_t write_func(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr
 	{
 		ASMBL(cur_node->left);
 
-		char *loc = get_loc_in_order(arg_counter, &error_code);
 		arg_counter++;
 
 		cur_node = cur_node->right;
@@ -182,14 +181,14 @@ bkd_err_t write_func(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr
 		WRITE_ASM("pop %s\n", loc);
 	}
 
-	WRITE_ASM("call %s\n", node->value.var_value);
+	WRITE_ASM("call %ls\n", node->value.var_value);
 
 	// pops all exept return register (wich is rax)
 	CALL(pop_all(nm_tbl_mngr, asm_file));
 
 	if(node->type == FUNC)
 	{
-		char *exch_reg = get_loc("_temp_exch", nm_tbl_mngr, true, &error_code);
+		char *exch_reg = get_loc(L"_temp_exch", nm_tbl_mngr, true, &error_code);
 
 		WRITE_ASM("pop %s\n", exch_reg);
 		WRITE_ASM("push rax\n");
@@ -242,7 +241,7 @@ void write_num(double num, FILE *asm_file)
 	WRITE_ASM("push %lf\n", num);
 }
 
-bkd_err_t write_var(char *var, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
+bkd_err_t write_var(wchar_t *var, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr)
 {
 	bkd_err_t error_code = BKD_ALL_GOOD;
 
@@ -494,7 +493,7 @@ bkd_err_t dtor_name_tables(Nm_tbl_mngr *nm_tbl_mngr)
 }
 
 #define IS_VAR(table_name)\
-	!strncmp(table_name, var, MAX_TOKEN_SIZE)
+	!wcsncmp(table_name, var, MAX_TOKEN_SIZE)
 
 #define NAME_TABLE\
 	nm_tbl_mngr->name_tables[lvl_id]
@@ -509,7 +508,7 @@ bkd_err_t dtor_name_tables(Nm_tbl_mngr *nm_tbl_mngr)
 		return NULL;							\
 	}
 
-char *get_loc(char *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag, bkd_err_t *error_code)
+char *get_loc(wchar_t *var, Nm_tbl_mngr *nm_tbl_mngr, bool init_flag, bkd_err_t *error_code)
 {
 	size_t overall_size = 0;
 
@@ -586,7 +585,7 @@ char *get_init_var(Table_cell *cell, bkd_err_t *error_code)
 	}
 }
 
-char *init_var(char *var, struct Name_table *cur_table,
+char *init_var(wchar_t *var, struct Name_table *cur_table,
 			   bkd_err_t *error_code, size_t overall_size)
 {
 	char *loc = NULL;
@@ -686,7 +685,7 @@ bkd_err_t write_func_decl(B_tree_node *node, FILE *asm_file)
 
 	B_tree_node *cur_node = node->left;
 
-	init_var("_ret_var", &(CUR_TABLE), &error_code, 0);
+	init_var(L"_ret_var", &(CUR_TABLE), &error_code, 0);
 	size_t arg_counter = 1;
 
 
@@ -698,7 +697,7 @@ bkd_err_t write_func_decl(B_tree_node *node, FILE *asm_file)
 		cur_node = cur_node->right;
 	}
 
-	WRITE_ASM(":%s\n", node->value.var_value);
+	WRITE_ASM(":%ls\n", node->value.var_value);
 
 	asmbl(node->right, asm_file, &nm_tbl_mngr);
 

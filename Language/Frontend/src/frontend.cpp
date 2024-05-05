@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <clocale>
 
 #include "frontend.h"
 #include "frontend_secondary.h"
@@ -9,26 +10,28 @@
 
 Tokens *tokenize(const char *file, frd_err_t *error_code)
 {
+	setlocale(LC_ALL, "");
+
 	Tokens *tokens = NULL;
 	CALLOC(tokens, 1, Tokens);
 	CALL(init_tokens(tokens));
 
 	size_t file_len = 0;
 
-	char *symbs = get_symbs(file, error_code, &file_len);
+	wchar_t *symbs = get_symbs(file, error_code, &file_len);
 	CHECK_ERROR(error_code);
 
-	char *symbs_start = symbs;
+	wchar_t *symbs_start = symbs;
 
 
 	while((size_t)(symbs - symbs_start) < file_len)
 	{
-		char cur_symb = *symbs;
-		LOG("\nCurrent symbol: %c\n", cur_symb);
+		wchar_t cur_symb = *symbs;
+		LOG(L"\nCurrent symbol: %lc\n", cur_symb);
 
 		if(is_blank(cur_symb))
 		{
-			LOG("It's blank.\n");
+			LOG(L"It's blank.\n");
 
 			symbs++;
 		}
@@ -57,6 +60,7 @@ Tokens *tokenize(const char *file, frd_err_t *error_code)
 
 
 	}
+
 
 	CALL(add_token(tokens, END, {.num_value = 0}));
 	dump_tokens(tokens);

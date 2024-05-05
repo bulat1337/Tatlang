@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <wchar.h>
 
 typedef double btr_elem_t;
 
@@ -77,10 +78,10 @@ enum Std_func
 
 struct Node_value
 {
-	double   num_value;
-	Ops      op_value;
-	char 	*var_value;
-	Std_func func;
+	double       num_value;
+	Ops          op_value;
+	wchar_t 	*var_value;
+	Std_func     func;
 };
 
 struct B_tree_node
@@ -110,7 +111,7 @@ struct Node_charachteristics
 	char       *label;
 };
 
-const size_t NODE_LABEL_STR_SIZE   = 100;
+const size_t NODE_LABEL_STR_SIZE   = 1000;
 const size_t OP_TOKEN_SIZE 		   = 15;
 const size_t STD_FUNC_TOKEN_SIZE   = 100;
 const size_t GR_DUMP_GEN_CMD_SIZE  = 100;

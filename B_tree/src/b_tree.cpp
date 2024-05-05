@@ -285,7 +285,7 @@ bool cmp_nodes(B_tree_node *node_1, B_tree_node *node_2)
 			(	(node_1->type == OP && node_2->type == OP) &&
 				(node_1->value.op_value == node_2->value.op_value	)	) ||
 			(	(node_1->type == VAR && node_2->type == VAR) &&
-				(!strncmp(node_1->value.var_value, node_2->value.var_value, strlen(node_2->value.var_value))	)	)
+				(!wcsncmp(node_1->value.var_value, node_2->value.var_value, NODE_LABEL_STR_SIZE)	)	)
 		)	)
 	{
 		return true;

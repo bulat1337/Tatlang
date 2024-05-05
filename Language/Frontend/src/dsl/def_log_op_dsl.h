@@ -3,6 +3,6 @@
 #define CASE(token)				\
 	case token:					\
 	{							\
-		LOG("\t"#token"\n");	\
+		LOG(L"\t"#token"\n");	\
 		break;					\
 	}

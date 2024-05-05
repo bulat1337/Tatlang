@@ -7,6 +7,8 @@
 #define LOG(...)\
 	mid_write_log("midend_log", __VA_ARGS__);
 
+const size_t MAX_VAR_SIZE = 100;
+
 B_tree_node *simplify          (B_tree_node *root, mid_err_t *error_code);
 
 B_tree_node *fold_consts       (B_tree_node *node, mid_err_t *error_code);

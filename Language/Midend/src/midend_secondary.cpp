@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <wchar.h>
 
 #include "midend_secondary.h"
 

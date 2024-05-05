@@ -99,7 +99,7 @@ error_t print_regular_nodes(struct B_tree_node *node,
 			nd_description->color = PASTEL_GREEN;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: VAR | val: %s} | {L: %p | R: %p}}",
+					"{%p | {type: VAR | val: %ls} | {L: %p | R: %p}}",
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
@@ -108,7 +108,7 @@ error_t print_regular_nodes(struct B_tree_node *node,
 			nd_description->color = AGRESSIVE_RED;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: KEYWORD | val: %s} | {L: %p | R: %p}}",
+					"{%p | {type: KEYWORD | val: %ls} | {L: %p | R: %p}}",
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
@@ -126,7 +126,7 @@ error_t print_regular_nodes(struct B_tree_node *node,
 			nd_description->color = BLUE;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: FUNC | val: %s} | {L: %p | R: %p}}",
+					"{%p | {type: FUNC | val: %ls} | {L: %p | R: %p}}",
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
@@ -135,7 +135,7 @@ error_t print_regular_nodes(struct B_tree_node *node,
 			nd_description->color = BLUE;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: CMD_FUNC | val: %s} | {L: %p | R: %p}}",
+					"{%p | {type: CMD_FUNC | val: %ls} | {L: %p | R: %p}}",
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
@@ -144,7 +144,7 @@ error_t print_regular_nodes(struct B_tree_node *node,
 			nd_description->color = FOX_ORANGE;
 
 			snprintf(nd_description->label, NODE_LABEL_STR_SIZE,
-					"{%p | {type: FUNC_DECL | val: %s} | {L: %p | R: %p}}",
+					"{%p | {type: FUNC_DECL | val: %ls} | {L: %p | R: %p}}",
 					node, node->value.var_value, node->left, node->right);
 			break;
 		}
@@ -403,6 +403,16 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 			DUMP("          CLOSE_BR");
 			break;
 		}
+		case MAIN:
+		{
+			DUMP("          MAIN");
+			break;
+		}
+		case FUNC_DECL:
+		{
+			DUMP("          FUNC_DECL");
+			break;
+		}
 		case OPEN_CBR:
 		{
 			DUMP("          OPEN_CBR");
@@ -532,13 +542,13 @@ void txt_dump_node(struct B_tree_node *node, FILE *console_dump_file)
 		case VAR:
 		{
 			DUMP("          VAR");
-			DUMP("               %s", node->value.var_value);
+			DUMP("               %ls", node->value.var_value);
 			break;
 		}
 		case KEYWORD:
 		{
 			DUMP("          KEYWORD");
-			DUMP("               %s", node->value.var_value);
+			DUMP("               %ls", node->value.var_value);
 			break;
 		}
 		default:

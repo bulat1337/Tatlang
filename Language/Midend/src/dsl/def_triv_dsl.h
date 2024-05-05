@@ -7,9 +7,6 @@
 #define RIGHT_VAR												\
 	node->right->value.var_value
 
-#define MAX_VAR_LEN												\
-	max_len(strlen(LEFT_VAR), strlen(RIGHT_VAR))
-
 #define LEFT_IS_ZERO\
 	node->left->type == NUM && cmp_double(node->left->value.num_value, 0) == 0
 
@@ -61,7 +58,7 @@
 	(node->left->type == VAR) &&									\
 			(node->right->type == VAR) &&							\
 			(node->type == OP && node->value.op_value == SUB) &&	\
-			(!strncmp(LEFT_VAR, RIGHT_VAR, MAX_VAR_LEN))
+			(!wcsncmp(LEFT_VAR, RIGHT_VAR, MAX_VAR_SIZE))
 
 // #define SAME_OP_W_CONSTS	\
 // left or right is const

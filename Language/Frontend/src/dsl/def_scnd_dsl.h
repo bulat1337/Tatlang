@@ -12,7 +12,7 @@
 #define ALLOCATION_CHECK(ptr)							\
 	if(ptr == NULL)										\
 	{													\
-		LOG("ERROR:\n\tUnable to allocate "#ptr".\n");	\
+		LOG(L"ERROR:\n\tUnable to allocate.\n");	\
 														\
 		return FRD_UNABLE_TO_ALLOCATE;					\
 	}
