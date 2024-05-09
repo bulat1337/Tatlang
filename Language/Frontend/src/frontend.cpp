@@ -39,6 +39,7 @@ Tokens *tokenize(const char *file, frd_err_t *error_code)
 		{
 			CALL(add_num(tokens, &symbs));
 		}
+		//else if(process_sym(&symbs, tokens, LEFT_AMOUNT, &processed));) //returns bool
 		else
 		{
 			bool processed = false;

@@ -130,11 +130,11 @@ frd_err_t add_token(Tokens *tokens, Node_type type, Node_value value)
 
 		REALLOC(tokens->data, tokens->capacity, B_tree_node);
 
-		if(tokens->capacity > 10000)
-		{
-			printf("inf tok\n");
-			exit(EXIT_FAILURE);
-		}
+		// if(tokens->capacity > 10000)
+		// {
+		// 	printf("inf tok\n");
+		// 	exit(EXIT_FAILURE);
+		// }
 
 		LOG(L"tokens->data reallocated successfuly.");
 	}

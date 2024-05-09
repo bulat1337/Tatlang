@@ -4,6 +4,12 @@
 
 #include "backend_secondary.h"
 
+#define CUR_LVL\
+	nm_tbl_mngr->cur_lvl
+
+#define CUR_TABLE\
+	nm_tbl_mngr->name_tables[CUR_LVL]
+
 #define CHECK_ERROR										\
 	if(error_code != BKD_ALL_GOOD)						\
 	{													\
@@ -196,23 +202,23 @@ const char *get_cond_type(Node_type type)
 	{
 		case ABOVE:
 		{
-			return "ja";
+			return "jbe";
 		}
 		case BELOW:
 		{
-			return "jb";
+			return "jae";
 		}
 		case ABOVE_EQUAL:
 		{
-			return "jae";
+			return "jb";
 		}
 		case BELOW_EQUAL:
 		{
-			return "jbe";
+			return "ja";
 		}
 		case EQUAL:
 		{
-			return "je";
+			return "jne";
 		}
 		case NOT_EQUAL:
 		{
@@ -257,20 +263,45 @@ bkd_err_t write_func(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mngr
 	// pops all exept return register (wich is rax)
 	CALL(pop_all(nm_tbl_mngr, asm_file));
 
-	if(node->type == FUNC)
+	if(CUR_LVL == 0 && CUR_TABLE.size == 0)
+	{
+		if(node->type == FUNC)
+		{
+			WRITE_ASM("push rax\n");
+		}
+	}
+	else
+	{
+		CALL(save_ret_reg(asm_file, node->type, nm_tbl_mngr));
+	}
+
+
+	return error_code;
+}
+
+bkd_err_t save_ret_reg(FILE *asm_file, Node_type type, Nm_tbl_mngr *nm_tbl_mngr)
+{
+	bkd_err_t error_code = BKD_ALL_GOOD;
+
+	if(type == FUNC)
 	{
 		char *exch_reg = get_loc(L"_temp_exch", nm_tbl_mngr, true, &error_code);
+		if(error_code != BKD_ALL_GOOD)
+		{
+			return error_code;
+		}
 
 		WRITE_ASM("pop %s\n", exch_reg);
 		WRITE_ASM("push rax\n");
 		WRITE_ASM("push %s\n", exch_reg);
 		WRITE_ASM("pop rax\n");
+
+		//deinit exch
 	}
 	else
 	{
 		WRITE_ASM("pop rax\n");
 	}
-
 
 	return error_code;
 }
@@ -463,12 +494,6 @@ void bkd_write_log(const char *file_name, const char *fmt, ...)
 
     va_end(args);
 }
-
-#define CUR_LVL\
-	nm_tbl_mngr->cur_lvl
-
-#define CUR_TABLE\
-	nm_tbl_mngr->name_tables[CUR_LVL]
 
 bkd_err_t init_name_tables(Nm_tbl_mngr *nm_tbl_mngr)
 {
@@ -784,6 +809,8 @@ bkd_err_t write_return(B_tree_node *node, FILE *asm_file, Nm_tbl_mngr *nm_tbl_mn
 	ASMBL(node->right);
 
 	WRITE_ASM("pop rax\n");
+
+	WRITE_ASM("ret\n");
 
 	return error_code;
 }
