@@ -15,61 +15,6 @@ A proprietary programming language that provides a full cycle of code processing
 - **Graphical AST Representation**: Implemented using the DOT graph description language.
 - **Adapted Syntax**: Tailored for the Tatar language, supporting all Unicode table symbols.
 
-## Installation
-
-### Dependencies
-
-- **SFML Library**: To work with the virtual machine's video core
-
-- **Graphviz Utility Package**: To visualize the abstract syntax tree.
-
-**Clone** the repository using the following command in a directory of your choice:
-
-```
-git clone git@github.com:bulat1337/Tatlang.git
-```
-
-## Usage
-
-1) Navigate to the `build` folder:
-
-```
-cd build
-```
-
-2) Inside the `build` folder, create a file with your code and the `.tat` extension.
-
-3) Generate the executable file by running:
-
-```
-make
-```
-
-
-4) The executable will be located in the `executables` folder. You can run it without leaving the `build` folder by executing:
-
-```
-../executables/language_test.out *your code file name*
-```
-
-
-5) The result of executing your code will be stored in the `execution_result.txt` file in the `build` folder.
-
-You can also use the `lan_sc` script (by editing the name of your code file within the script) like this:
-
-```
-./lan_sc
-```
-
-If you encounter permission issues, you can modify the permissions of the `lan_sc` script by running the following command while in the `build` folder:
-
-```
-chmod +rwx lan_sc
-```
-
-
-
-
 ## How It Works
 
 ### Frontend
@@ -152,6 +97,9 @@ Based on the simplified syntax tree, assembly code is generated, which serves as
 
 Example of Generated Code:
 
+<details>
+  <summary>Assembly code</summary>
+  
 ```
 :rec_func
 push 0
@@ -221,8 +169,9 @@ call rec_func
 push rax
 out
 hlt
-
 ```
+
+</details>
 
 #### Compilation
 
@@ -232,6 +181,68 @@ The generated assembly code is compiled on the processor emulator, resulting in 
 
 The resulting bytecode executes the processor.
 
+
+## Installation
+
+### Dependencies
+
+- **SFML Library**: To work with the virtual machine's video core
+
+- **Graphviz Utility Package**: To visualize the abstract syntax tree.
+
+**Clone** the repository using the following command in a directory of your choice:
+
+```
+git clone git@github.com:bulat1337/Tatlang.git
+```
+
+## Usage
+
+1) Navigate to the `build` folder:
+
+```
+cd build
+```
+
+2) Inside the `build` folder, create a file with your code and the `.tat` extension.
+
+3) Generate the executable file by running:
+
+```
+make
+```
+
+
+4) The executable will be located in the `executables` folder. You can run it without leaving the `build` folder by executing:
+
+```
+../executables/language_test.out *your code file name*
+```
+
+
+5) The result of executing your code will be stored in the `execution_result.txt` file in the `build` folder.
+
+You can also use the `lan_sc` script (by editing the name of your code file within the script) like this:
+
+```
+./lan_sc
+```
+
+If you encounter permission issues, you can modify the permissions of the `lan_sc` script by running the following command while in the `build` folder:
+
+```
+chmod +rwx lan_sc
+```
+
+# System specs
+
+**CPU**: Apple M1
+
+**RAM**: 8 GB
+
+**OS**: MacOS 14.1.1
+
+**Compiler**: Apple clang version 14.0.3
 
 # Acknowledgments
 
