@@ -1,4 +1,5 @@
+make build
 make clean
 make
-../executables/language_test.out code.tat
+../executables/language_test.out code_test.tat
 open execution_result.txt
