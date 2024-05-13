@@ -1,10 +1,15 @@
 # Tatlang
 
 
-A proprietary programming language that provides a full cycle of code processing:
+A programming language tailored specifically for the Tatar language.
+
+Key stages of operation:
 - **Tokenization**: The process of breaking down the code into tokens.
 - **Abstract Syntax Tree (AST) Formation**: Utilizing a recursive descent algorithm to construct the AST.
-- **Assembly**: The conversion of the AST into assembly code.
+- **Assembly**: The conversion of the AST into assembly codet hat matches the processor emulator being used.
+
+Next, the processor emulator operates:
+
 - **Compilation**: The translation of assembly code into machine code.
 - **Execution**: Running the compiled code.
 
@@ -21,7 +26,7 @@ A proprietary programming language that provides a full cycle of code processing
 
 The frontend's primary task involves transforming code written in Tatlang into an Abstract Syntax Tree (AST).
 
-Example of Code in Tatlang Language (Recursive Factorial):
+Example of Code in Tatlang Language (Recursive fibonacci algorithm):
 
 ```
 # function declaration
@@ -99,7 +104,7 @@ Example of Generated Code:
 
 <details>
   <summary>Assembly code</summary>
-  
+
 ```
 :rec_func
 push 0
@@ -204,23 +209,29 @@ git clone git@github.com:bulat1337/Tatlang.git
 cd build
 ```
 
-2) Inside the `build` folder, create a file with your code and the `.tat` extension.
+2) Create the required folders using:
 
-3) Generate the executable file by running:
+```
+make build
+```
+
+3) Inside the `build` folder, create a file with your code and the `.tat` extension.
+
+4) Generate the executable file by running:
 
 ```
 make
 ```
 
 
-4) The executable will be located in the `executables` folder. You can run it without leaving the `build` folder by executing:
+5) The executable will be located in the `executables` folder. You can run it without leaving the `build` folder by executing:
 
 ```
 ../executables/language_test.out *your code file name*
 ```
 
 
-5) The result of executing your code will be stored in the `execution_result.txt` file in the `build` folder.
+6) The result of executing your code will be stored in the `execution_result.txt` file in the `build` folder.
 
 You can also use the `lan_sc` script (by editing the name of your code file within the script) like this:
 
