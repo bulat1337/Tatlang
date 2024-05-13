@@ -16,4 +16,28 @@ clean_junk:
 clean_all:
 	@for dir in $(SUBDIRS); do $(MAKE) clean -C $$dir; done
 
+build:
+	mkdir -p ../obj
+	mkdir -p ../obj/assembler_obj
+	mkdir -p ../obj/drivers_obj
+	mkdir -p ../obj/global_obj
+	mkdir -p ../obj/SPU_obj
+	mkdir -p ../obj/stack_obj
+	mkdir -p ../obj/file_parser_obj
+	mkdir -p ../obj/utils_obj
+	mkdir -p ../obj/B_tree_obj
+	mkdir -p ../obj/recursive_parser_obj
+	mkdir -p ../obj/frontend_obj
+	mkdir -p ../obj/midend_obj
+	mkdir -p ../obj/backend_obj
+	mkdir -p ../obj/language_test_obj
+	mkdir -p ../CPU/obj/assembler_obj
+	mkdir -p ../CPU/obj/drivers_obj
+	mkdir -p ../CPU/obj/global_obj
+	mkdir -p ../CPU/obj/SPU_obj
+	mkdir -p ../CPU/obj/stack_obj
+	mkdir -p ../CPU/libs/
+	mkdir -p ../executables
+	mkdir -p ../libs
+
 clean: clean_junk clean_all
